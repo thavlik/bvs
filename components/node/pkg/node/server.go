@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 
 	"go.uber.org/zap"
 )
@@ -32,12 +31,12 @@ func (s *Server) Start(
 	s.log.Info("Starting cardano-node...")
 	cmd := exec.Command(
 		"cardano-node", "run",
-		"--config", filepath.Join(config, "testnet-config.json"),
+		"--config", config,
 		"--database-path", databasePath,
-		"--socket-path", filepath.Join(databasePath, "node.socket"),
-		"--host-addr", "172.17.0.2",
-		"--port", "1337",
-		"--topology", filepath.Join(config, "testnet-topology.json"),
+		"--socket-path", socketPath,
+		"--host-addr", hostAddr,
+		"--port", fmt.Sprintf("%d", port),
+		"--topology", topology,
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
