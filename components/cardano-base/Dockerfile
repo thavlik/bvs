@@ -1,18 +1,7 @@
-# Download latest base image from ubuntu
 FROM debian:11-slim
-
-# LABEL about the custom image
 LABEL version="0.1"
 LABEL description="This is custom Docker Image for a Cardano sandbox."
-
-# Starting work directory
 WORKDIR /root
-
-# Disable Prompt During Packages Installation
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Update and upgrade Ubuntu software repository and install various packages
-# from ubuntu repository
 RUN apt-get update \
     && apt-get install -y \
         automake \
@@ -33,7 +22,9 @@ RUN apt-get update \
         libtinfo-dev \
         libsystemd-dev \
         zlib1g-dev \
-        libncursesw5
+        libncursesw5 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install GHC and Cabal
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org -sSf | sh -s -- -y

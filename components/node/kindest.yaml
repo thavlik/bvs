@@ -1,4 +1,4 @@
-#dependencies:
-#  - ../cardano-base
+dependencies:
+  - ../cardano-base
 build:
   name: thavlik/bvs-node

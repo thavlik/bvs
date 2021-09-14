@@ -1,4 +1,6 @@
-FROM thavlik/cardano-base:latest
+ARG KINDEST_REPOSITORY=""
+ARG KINDEST_TAG="latest"
+FROM ${KINDEST_REPOSITORY}thavlik/cardano-base:${KINDEST_TAG} AS builder
 #FROM debian:11-slim
 #RUN apt update && apt install -y libsodium23
 #COPY --from=builder /root/.local/bin/cardano-node /root/.local/bin/cardano-node
