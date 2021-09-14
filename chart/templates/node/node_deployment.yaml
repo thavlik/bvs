@@ -23,9 +23,6 @@ spec:
       - name: node
         imagePullPolicy: {{ .imagePullPolicy }}
         image: {{ .image }}
-        command:
-        - node
-        - server
         resources:
 {{ toYaml .resources | indent 12 }}
         ports:

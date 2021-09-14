@@ -1,5 +1,5 @@
 # Download latest base image from ubuntu
-FROM ubuntu:xenial
+FROM debian:11-slim
 
 # LABEL about the custom image
 LABEL version="0.1"
@@ -13,15 +13,27 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Update and upgrade Ubuntu software repository and install various packages
 # from ubuntu repository
-RUN apt-get update && apt upgrade -y
-
-# Install various system-level packages from ubuntu repository
-RUN apt-get install -y automake build-essential pkg-config make g++ tmux git \
- && apt-get install -y jq wget libtool autoconf curl
-
-# Install various lib packages from ubuntu repository
-RUN apt-get install -y libffi-dev libgmp-dev libssl-dev libtinfo-dev \
- && apt-get install -y libsystemd-dev zlib1g-dev libncursesw5 
+RUN apt-get update \
+    && apt-get install -y \
+        automake \
+        build-essential \
+        pkg-config \
+        make \
+        g++ \
+        tmux \
+        git \
+        jq \
+        wget \
+        libtool \
+        autoconf \
+        curl \
+        libffi-dev \
+        libgmp-dev \
+        libssl-dev \
+        libtinfo-dev \
+        libsystemd-dev \
+        zlib1g-dev \
+        libncursesw5
 
 # Install GHC and Cabal
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org -sSf | sh -s -- -y
