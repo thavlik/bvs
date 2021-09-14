@@ -9,5 +9,5 @@ spec:
   selector:
     app: {{ .Release.Name }}-node
   ports:
-  - name: http
-    port: 80
+  - name: cardano
+    port: 1337
