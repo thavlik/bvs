@@ -2,8 +2,3 @@ dependencies:
 - components/cardano-base
 - components/gateway
 - components/node
-env:
-  kubernetes:
-    resources: []
-    charts:
-      app: {}
