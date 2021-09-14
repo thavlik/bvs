@@ -1,4 +1,13 @@
 dependencies:
-- components/cardano-base
-- components/gateway
-- components/node
+  - components/cardano-base
+  - components/gateway
+  - components/node
+env:
+  kubernetes:
+    resources:
+      - test/fixtures/
+    charts:
+      bvs:
+        name: chart/
+        releaseName: bvs
+        namespace: bvs
