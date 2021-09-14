@@ -1,0 +1,35 @@
+{{- with .Values.gateway }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-gateway
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-gateway
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-gateway
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: gateway
+        imagePullPolicy: {{ .imagePullPolicy }}
+        image: {{ .image }}
+        command:
+        - gateway
+        - server
+        resources:
+{{ toYaml .resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+        env: []
+{{- end }}

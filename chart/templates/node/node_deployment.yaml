@@ -1,0 +1,35 @@
+{{- with .Values.node }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-node
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-node
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-node
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: node
+        imagePullPolicy: {{ .imagePullPolicy }}
+        image: {{ .image }}
+        command:
+        - node
+        - server
+        resources:
+{{ toYaml .resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+        env: []
+{{- end }}

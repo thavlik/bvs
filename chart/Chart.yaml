@@ -1,0 +1,7 @@
+apiVersion: v2
+description: BVS chart
+name: bvs
+version: 0.0.0
+maintainers:
+  - name: Tom Havlik
+    email: thavlik@protonmail.com

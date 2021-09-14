@@ -1,0 +1,19 @@
+imagePullSecrets: []
+
+node:
+  image: thavlik/bvs-node:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 50m
+
+gateway:
+  image: thavlik/bvs-gateway:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 50m
