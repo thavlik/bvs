@@ -174,7 +174,7 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 		}
 	}()
 
-	// Write signing key files
+	// Write key files
 	paymentSigningKeyPath := filepath.Join(rootDir, "payment.skey")
 	if err := ioutil.WriteFile(
 		paymentSigningKeyPath,
@@ -216,6 +216,7 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	// Reference on epochs and slots:
 	// https://developers.cardano.org/docs/stake-pool-course/introduction-to-cardano/
 	// Maybe a low number is more appropriate?
+	// TODO: derive from input
 	invalidHereafter := currentSlot + 31557600 // one year
 
 	mintingScript, err := generateMiningScript(invalidHereafter, policyVerificationKeyPath)

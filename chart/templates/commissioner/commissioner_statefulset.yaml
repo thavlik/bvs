@@ -50,7 +50,7 @@ spec:
         - --mongodb-port
         - "{{ .Values.commissioner.mongoDB.port }}"
         - --mongodb-database
-        - {{ .Values.mongoDB.database }}
+        - {{ .Values.commissioner.mongoDB.database }}
       {{- if .Values.commissioner.metrics }}
         - --metrics-port
         - "9091"
