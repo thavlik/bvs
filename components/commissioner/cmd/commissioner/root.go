@@ -7,8 +7,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "gateway",
-	Short: "BVS gateway microservice",
+	Use: "commissioner",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("please use a subcommand")
 	},

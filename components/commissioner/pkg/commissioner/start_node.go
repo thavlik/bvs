@@ -1,42 +1,28 @@
-package chillpill
+package commissioner
 
 import (
 	"bufio"
 	"fmt"
 	"os/exec"
-
-	"go.uber.org/zap"
 )
 
-type Server struct {
-	log *zap.Logger
-}
-
-func NewServer(
-	log *zap.Logger,
-) *Server {
-	return &Server{
-		log,
-	}
-}
-
-func (s *Server) Start(
-	port int,
-	config,
-	databasePath,
-	socketPath,
-	hostAddr,
-	topology string,
+func (s *Server) startNode(
+	nodePort int,
+	nodeConfig,
+	nodeDatabasePath,
+	nodeSocketPath,
+	nodeHostAddr,
+	nodeTopology string,
 ) error {
 	s.log.Info("Starting cardano-node...")
 	cmd := exec.Command(
 		"cardano-node", "run",
-		"--config", config,
-		"--database-path", databasePath,
-		"--socket-path", socketPath,
-		"--host-addr", hostAddr,
-		"--port", fmt.Sprintf("%d", port),
-		"--topology", topology,
+		"--config", nodeConfig,
+		"--database-path", nodeDatabasePath,
+		"--socket-path", nodeSocketPath,
+		"--host-addr", nodeHostAddr,
+		"--port", fmt.Sprintf("%d", nodePort),
+		"--topology", nodeTopology,
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

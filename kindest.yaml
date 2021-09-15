@@ -1,7 +1,5 @@
 dependencies:
-  - components/cardano-base
-  - components/gateway
-  - components/node
+  - components/commissioner
 env:
   kubernetes:
     resources:
