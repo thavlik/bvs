@@ -10,6 +10,7 @@ import (
 
 type ServerArgs struct {
 	Port             int
+	MetricsPort      int
 	NodePort         int
 	NodeConfig       string
 	NodeDatabasePath string
@@ -51,6 +52,7 @@ var serverCmd = &cobra.Command{
 			log,
 		).Start(
 			serverArgs.Port,
+			serverArgs.MetricsPort,
 			serverArgs.NodePort,
 			serverArgs.NodeConfig,
 			serverArgs.NodeDatabasePath,
@@ -63,6 +65,7 @@ var serverCmd = &cobra.Command{
 
 func init() {
 	serverCmd.PersistentFlags().IntVar(&serverArgs.Port, "port", 80, "http service listener port")
+	serverCmd.PersistentFlags().IntVar(&serverArgs.MetricsPort, "metrics-port", 0, "optional prometheus metrics port")
 	serverCmd.PersistentFlags().IntVar(&serverArgs.NodePort, "node-port", 1337, "cardano-node listener port")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.NodeConfig, "node-config", "", "cardano-node config path")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.NodeDatabasePath, "node-database-path", "", "cardano-node database path")

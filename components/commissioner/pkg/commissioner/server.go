@@ -2,7 +2,9 @@ package commissioner
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
 	"go.uber.org/zap"
 )
@@ -31,6 +33,7 @@ func NewServer(
 
 func (s *Server) Start(
 	port int,
+	metricsPort int,
 	nodePort int,
 	nodeConfig,
 	nodeDatabasePath,
@@ -55,10 +58,23 @@ func (s *Server) Start(
 		serverDone <- s.listen(port)
 		close(serverDone)
 	}()
+	metricsDone := make(chan error, 1)
+	if metricsPort == 0 {
+		// Metrics are disabled
+		defer close(metricsDone)
+	} else {
+		go func() {
+			http.Handle("/metrics", promhttp.Handler())
+			metricsDone <- http.ListenAndServe(fmt.Sprintf(":%d", metricsPort), nil)
+			close(metricsDone)
+		}()
+	}
 	select {
 	case err := <-nodeDone:
 		return fmt.Errorf("cardano-node: %v", err)
 	case err := <-serverDone:
 		return fmt.Errorf("listen: %v", err)
+	case err := <-metricsDone:
+		return fmt.Errorf("metrics: %v", err)
 	}
 }

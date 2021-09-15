@@ -45,6 +45,10 @@ spec:
         - "1337"
         - --node-topology
         - "/configs/testnet-topology.json"
+      {{- if .Values.commissioner.metrics }}
+        - --metrics-port
+        - "9091"
+      {{- end }}
       {{- if .Values.commissioner.pvc }}
         volumeMounts:
         - name: data
@@ -57,4 +61,8 @@ spec:
           name: http
         - containerPort: 1337
           name: cardano
+      {{- if .Values.commissioner.metrics }}
+        - containerPort: 9091
+          name: metrics
+      {{- end }}
         env: []
