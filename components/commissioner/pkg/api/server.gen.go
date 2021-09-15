@@ -103,10 +103,16 @@ type CreateElectionRequest struct {
 	Deadline int64  `json:"deadline"`
 }
 
+type VerificationKey struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	CborHex     string `json:"cborHex"`
+}
+
 type CreateElectionResponse struct {
-	ID              string `json:"id"`
-	VerificationKey string `json:"verificationKey"`
-	Error           string `json:"error,omitempty"`
+	ID              string          `json:"id"`
+	VerificationKey VerificationKey `json:"verificationKey"`
+	Error           string          `json:"error,omitempty"`
 }
 
 type MintVoteRequest struct {

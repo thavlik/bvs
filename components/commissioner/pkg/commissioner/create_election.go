@@ -2,6 +2,7 @@ package commissioner
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -50,13 +51,16 @@ func (s *Server) CreateElection(
 		return nil, fmt.Errorf("storage: %v", err)
 	}
 
-	verificationKey, err := ioutil.ReadFile(pubKeyPath)
+	verificationKeyData, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
 		return nil, err
 	}
-
+	var vkey api.VerificationKey
+	if err := json.Unmarshal(verificationKeyData, &vkey); err != nil {
+		return nil, fmt.Errorf("unmarshal: %v", err)
+	}
 	return &api.CreateElectionResponse{
 		ID:              id,
-		VerificationKey: string(verificationKey),
+		VerificationKey: vkey,
 	}, nil
 }

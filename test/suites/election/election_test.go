@@ -28,7 +28,7 @@ func TestElectionCreate(t *testing.T) {
 	require.NoError(t, err)
 	fmt.Println(name)
 	fmt.Println(resp.ID)
-	fmt.Println(resp.VerificationKey)
+	fmt.Println(fmt.Sprintf("%#v", resp.VerificationKey))
 	require.NotEmpty(t, resp.ID)
 	require.NotEmpty(t, resp.VerificationKey)
 }

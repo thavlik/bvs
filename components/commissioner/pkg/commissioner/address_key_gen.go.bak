@@ -1,0 +1,12 @@
+package commissioner
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/thavlik/bvs/components/commissioner/pkg/api"
+)
+
+func (s *Server) AddressKeyGen(ctx context.Context, req api.AddressKeyGenRequest) (*api.AddressKeyGenResponse, error) {
+	return &api.AddressKeyGen{}, fmt.Errorf("unimplemented")
+}

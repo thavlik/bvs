@@ -10,9 +10,15 @@ type CreateElectionRequest struct {
 	Deadline int64  `json:"deadline"`
 }
 
+type VerificationKey struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+	CborHex     string `json:"cborHex"`
+}
+
 type CreateElectionResponse struct {
-	ID              string `json:"id"`              // policyID; https://developers.cardano.org/docs/native-tokens/minting-nfts/
-	VerificationKey string `json:"verificationKey"` // contents of verification key file
+	ID              string          `json:"id"`              // policyID; https://developers.cardano.org/docs/native-tokens/minting-nfts/
+	VerificationKey VerificationKey `json:"verificationKey"` // contents of verification key file
 }
 
 type Auditor struct {
