@@ -65,6 +65,7 @@ func (s *Server) Start(
 	} else {
 		go func() {
 			http.Handle("/metrics", promhttp.Handler())
+			fmt.Printf("Metrics server listening on %d\n", metricsPort)
 			metricsDone <- http.ListenAndServe(fmt.Sprintf(":%d", metricsPort), nil)
 			close(metricsDone)
 		}()
