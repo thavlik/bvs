@@ -12,3 +12,11 @@ env:
         values:
           commissioner:
             image: localhost:5000/thavlik/bvs-commissioner:latest
+test:
+  - name: e2e
+    defaultTimeout: 15m
+    build:
+      name: thavlik/bvs-test
+      dockerfile: test/Dockerfile
+    env:
+      kubernetes: {}
