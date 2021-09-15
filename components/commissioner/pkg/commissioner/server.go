@@ -7,6 +7,10 @@ import (
 	"go.uber.org/zap"
 )
 
+var CardanoTestNetMagic = 1097911063
+
+// cardano-cli query tip --testnet-magic 1097911063
+
 type Server struct {
 	tokenName string
 	storage   storage.Storage

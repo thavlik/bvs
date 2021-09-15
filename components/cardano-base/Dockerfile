@@ -33,8 +33,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org -sSf | sh
 ENV PATH="/root/.ghcup/bin:$PATH"
 
 # Install specific ghc version
-RUN ghcup install ghc 8.10.4
-RUN ghcup set ghc 8.10.4
+RUN ghcup install ghc 8.10.4 && ghcup set ghc 8.10.4
 
 # Make a Cardano source code directory
 RUN mkdir -p ~/cardano-src
