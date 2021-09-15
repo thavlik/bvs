@@ -35,16 +35,23 @@ func NewMongoDBStorage(
 	password,
 	host string,
 	port int,
-	database string,
+	database,
+	cacertPath string,
 ) (storage.Storage, error) {
+	if port != 27017 {
+		return nil, fmt.Errorf("by virtue of a limitation in mongodb, only port 27017 is supported")
+	}
 	uri := fmt.Sprintf(
-		"mongodb+srv://%s:%s@%s:%d",
+		"mongodb+srv://%s:%s@%s/%s?tls=true&tlsCAFile=%s",
 		username,
 		password,
 		host,
-		port,
+		database,
+		cacertPath,
 	)
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, fmt.Errorf("connect: %v", err)
 	}

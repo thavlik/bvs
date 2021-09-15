@@ -17,4 +17,5 @@ commissioner:
     database: default
     username: {}
     password: {}
+    cacert: {}
 

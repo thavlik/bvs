@@ -76,3 +76,5 @@ spec:
 {{ tpl (toYaml .Values.commissioner.mongoDB.username) . | indent 10 }}
         - name: MONGODB_PASSWORD
 {{ tpl (toYaml .Values.commissioner.mongoDB.password) . | indent 10 }}
+        - name: MONGODB_CACERT
+{{ tpl (toYaml .Values.commissioner.mongoDB.cacert) . | indent 10 }}

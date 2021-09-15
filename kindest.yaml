@@ -28,6 +28,11 @@ env:
                   secretKeyRef:
                     name: mongodb-cred
                     key: password
+              cacert:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongodb-cred
+                    key: cacert
 test:
   - name: e2e
     defaultTimeout: 15m

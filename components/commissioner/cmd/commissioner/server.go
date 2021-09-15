@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -10,20 +11,21 @@ import (
 )
 
 type ServerArgs struct {
-	Port             int
-	MetricsPort      int
-	NodePort         int
-	NodeConfig       string
-	NodeDatabasePath string
-	NodeSocketPath   string
-	NodeHostAddr     string
-	NodeTopology     string
-	TokenName        string
-	MongoDBHost      string
-	MongoDBPort      int
-	MongoDBDatabase  string
-	MongoDBUsername  string
-	MongoDBPassword  string
+	Port              int
+	MetricsPort       int
+	NodePort          int
+	NodeConfig        string
+	NodeDatabasePath  string
+	NodeSocketPath    string
+	NodeHostAddr      string
+	NodeTopology      string
+	TokenName         string
+	MongoDBHost       string
+	MongoDBPort       int
+	MongoDBDatabase   string
+	MongoDBUsername   string
+	MongoDBPassword   string
+	MongoDBCACertPath string
 }
 
 var serverArgs ServerArgs
@@ -58,6 +60,16 @@ var serverCmd = &cobra.Command{
 		if v, ok := os.LookupEnv("MONGODB_PASSWORD"); ok {
 			serverArgs.MongoDBPassword = v
 		}
+		if v, ok := os.LookupEnv("MONGODB_CACERT"); ok {
+			if err := ioutil.WriteFile(
+				serverArgs.MongoDBCACertPath,
+				[]byte(v),
+				0644,
+			); err != nil {
+				return err
+			}
+			fmt.Printf("Wrote MONGODB_CACERT to %s\n", serverArgs.MongoDBCACertPath)
+		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -67,6 +79,7 @@ var serverCmd = &cobra.Command{
 			serverArgs.MongoDBHost,
 			serverArgs.MongoDBPort,
 			serverArgs.MongoDBDatabase,
+			serverArgs.MongoDBCACertPath,
 		)
 		if err != nil {
 			return fmt.Errorf("storage: %v", err)
@@ -103,5 +116,6 @@ func init() {
 	serverCmd.PersistentFlags().StringVar(&serverArgs.MongoDBDatabase, "mongodb-database", "default", "MongoDB database name")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.MongoDBUsername, "mongodb-username", "", "MongoDB connection username")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.MongoDBPassword, "mongodb-password", "", "MongoDB connection password")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.MongoDBCACertPath, "mongodb-cacert-path", "/ca.crt", "MongoDB connection CA certificate file path")
 	ConfigureCommand(serverCmd)
 }
