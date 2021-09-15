@@ -26,6 +26,7 @@ func TestElectionCreate(t *testing.T) {
 		Deadline: time.Now().Add(24 * time.Hour).UnixNano(),
 	})
 	require.NoError(t, err)
+	fmt.Println(name)
 	fmt.Println(resp.ID)
 	fmt.Println(resp.VerificationKey)
 	require.NotEmpty(t, resp.ID)
