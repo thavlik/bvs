@@ -11,5 +11,10 @@ commissioner:
   metrics: true
   tokenName: "Vote"
   pvc: ""
-  # TODO: configure volumes
+  mongoDB:
+    host: ""
+    port: 27017
+    database: default
+    username: {}
+    password: {}
 

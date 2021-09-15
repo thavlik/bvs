@@ -45,6 +45,12 @@ spec:
         - "1337"
         - --node-topology
         - "/configs/testnet-topology.json"
+        - --mongodb-host
+        - {{ .Values.commissioner.mongoDB.host }}
+        - --mongodb-port
+        - "{{ .Values.commissioner.mongoDB.port }}"
+        - --mongodb-database
+        - {{ .Values.mongoDB.database }}
       {{- if .Values.commissioner.metrics }}
         - --metrics-port
         - "9091"
@@ -65,4 +71,8 @@ spec:
         - containerPort: 9091
           name: metrics
       {{- end }}
-        env: []
+        env:
+        - name: MONGODB_USERNAME
+{{ tpl (toYaml .Values.postgres.username) . | indent 10 }}
+        - name: MONGODB_PASSWORD
+{{ tpl (toYaml .Values.postgres.password) . | indent 10 }}
