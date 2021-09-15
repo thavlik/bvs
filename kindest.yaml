@@ -1,5 +1,6 @@
 dependencies:
   - components/commissioner
+  - components/node
 env:
   kubernetes:
     resources:
@@ -13,8 +14,9 @@ env:
         releaseName: bvs
         namespace: bvs
         values:
-          commissioner:
+          node:
             pvc: cardano-db
+          commissioner:
             mongoDB:
               host: bvs-db-b7d57032.mongo.ondigitalocean.com
               database: admin

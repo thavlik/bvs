@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-node
+  labels:
+    app: {{ .Release.Name }}-node
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-node
+  ports:
+  - name: proxy
+    port: 2100
+  - name: node
+    port: 1337

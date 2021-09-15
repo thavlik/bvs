@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
+	"github.com/thavlik/bvs/test/util"
 )
 
 func CreateTestCommissioner(t *testing.T) api.Commissioner {
@@ -21,14 +23,27 @@ func CreateTestCommissioner(t *testing.T) api.Commissioner {
 func TestElectionCreate(t *testing.T) {
 	com := CreateTestCommissioner(t)
 	name := "bvstest" + uuid.New().String()[:5]
-	resp, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{
+	_, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{
 		Name:     name,
 		Deadline: time.Now().Add(24 * time.Hour).UnixNano(),
 	})
 	require.NoError(t, err)
-	fmt.Println(name)
+	w := util.GetWallet(t)
+	req := api.CreateMinterRequest{}
+	require.NoError(t, json.Unmarshal([]byte(w.VerificationKey), &req.VerificationKey))
+	require.NoError(t, json.Unmarshal([]byte(w.SigningKey), &req.SigningKey))
+	resp, err := com.CreateMinter(context.TODO(), req)
+	require.NoError(t, err)
 	fmt.Println(resp.ID)
-	fmt.Println(fmt.Sprintf("%#v", resp.VerificationKey))
-	require.NotEmpty(t, resp.ID)
-	require.NotEmpty(t, resp.VerificationKey)
+	asset, err := com.MintVote(context.TODO(), api.MintVoteRequest{
+		Election: name,
+		Voter:    "",
+		Ident:    "",
+		Auditor: api.Auditor{
+			Agent:     resp.ID,
+			Timestamp: time.Now().Unix(),
+		},
+	})
+	require.NoError(t, err)
+	fmt.Println(asset.ID)
 }

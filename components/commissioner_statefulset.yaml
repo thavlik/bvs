@@ -28,6 +28,14 @@ spec:
       - name: commissioner
         imagePullPolicy: {{ .Values.commissioner.imagePullPolicy }}
         image: {{ .Values.commissioner.image }}
+        readinessProbe:
+          exec:
+            command:
+              - cat
+              - /ready
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 25
         command:
         - commissioner
         - server
@@ -38,7 +46,7 @@ spec:
         - --node-database-path
         - "/mnt/db"
         - --node-socket-path
-        - "/node.socket"
+        - "/mnt/db/node.socket"
         - --node-host-addr
         - "0.0.0.0"
         - --node-port

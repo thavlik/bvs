@@ -6,8 +6,26 @@ commissioner:
   replicas: 1
   resources:
     limits:
-      memory: 512Mi
-      cpu: 1000m
+      memory: 64Mi
+      cpu: 250m
+  metrics: true
+  tokenName: "Vote"
+  mongoDB:
+    host: ""
+    port: 27017
+    database: default
+    username: {}
+    password: {}
+    cacert: {}
+
+node:
+  image: thavlik/bvs-node:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    limits:
+      memory: 9Gi
+      cpu: 3000m
   metrics: true
   tokenName: "Vote"
   pvc: ""

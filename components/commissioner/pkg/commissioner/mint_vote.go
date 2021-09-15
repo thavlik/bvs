@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
-	"go.uber.org/zap"
 )
 
 func metadataJson(policyID string) string {
@@ -66,27 +65,11 @@ func generateMiningScript(
 }
 
 func getCurrentSlot() (int, error) {
-	cmd := exec.Command(
-		"bash",
-		"-c",
-		"cardano-cli query tip --mainnet | jq .slot?",
-	)
-	stdout, err := cmd.StdoutPipe()
+	tip, err := queryTip()
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("queryTip: %v", err)
 	}
-	if err := cmd.Run(); err != nil {
-		return 0, err
-	}
-	body, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return 0, err
-	}
-	v, err := strconv.ParseInt(strings.TrimSpace(string(body)), 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return int(v), nil
+	return tip.Slot, nil
 }
 
 var errNoTransactions = fmt.Errorf("no previous transactions")
@@ -147,6 +130,8 @@ func queryAddress(address string) (*addressInfo, error) {
 }
 
 func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.MintVoteResponse, error) {
+	// TODO: make sure minter has enough ADA and return specific error if not
+
 	// Look up the election (policy) signing key
 	election, err := s.storage.RetrieveElection(req.Election)
 	if err != nil {
@@ -170,7 +155,7 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	}
 	defer func() {
 		if err := os.RemoveAll(rootDir); err != nil {
-			s.log.Error("failed to clean up temp dir", zap.Error(err))
+			fmt.Printf("failed to clean up temp dir: %v\n", err)
 		}
 	}()
 
@@ -314,8 +299,9 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 		return nil, fmt.Errorf("cardano-cli: %v", err)
 	}
 
+	// TODO: get minted asset ID
 	return &api.MintVoteResponse{
 		ID:    id,
 		Asset: "",
-	}, fmt.Errorf("unimplemented")
+	}, nil
 }

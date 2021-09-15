@@ -10,27 +10,22 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
 	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
-	"go.uber.org/zap"
 )
 
 func (s *Server) CreateElection(
 	ctx context.Context,
 	req api.CreateElectionRequest,
 ) (*api.CreateElectionResponse, error) {
-	s.log.Info("CreateElection",
-		zap.String("req.Name", req.Name),
-		zap.Int("req.Deadline", int(req.Deadline)))
-	id := uuid.New().String()
-	dir := filepath.Join("/tmp/policy/", id)
+	fmt.Printf("CreateElection %#v\n", req)
+	dir := filepath.Join("/tmp/policy/", req.Name)
 	if err := os.MkdirAll(dir, 0644); err != nil {
 		return nil, err
 	}
 	defer func() {
 		if err := os.RemoveAll(dir); err != nil {
-			s.log.Error("failed to delete policy files", zap.Error(err))
+			fmt.Printf("failed to delete policy files: %v\n", err)
 		}
 	}()
 	pubKeyPath := filepath.Join(dir, "key.pub")
@@ -53,20 +48,20 @@ func (s *Server) CreateElection(
 	}
 	// Store info about election in database
 	if err := s.storage.StoreElection(&storage.Election{
-		ID:              id,
+		ID:              req.Name,
 		Deadline:        time.Now().Add(365 * 24 * time.Hour),
 		SigningKey:      string(signingKey),
 		VerificationKey: string(verificationKey),
 	}); err != nil {
 		return nil, fmt.Errorf("storage: %v", err)
 	}
-	var vkey api.VerificationKey
+	var vkey api.Key
 	if err := json.Unmarshal(verificationKey, &vkey); err != nil {
 		return nil, fmt.Errorf("unmarshal: %v", err)
 	}
-	s.log.Info("Created election", zap.String("id", id))
+	fmt.Printf("Created election, id=%s\n", req.Name)
 	return &api.CreateElectionResponse{
-		ID:              id,
+		ID:              req.Name,
 		VerificationKey: vkey,
 	}, nil
 }

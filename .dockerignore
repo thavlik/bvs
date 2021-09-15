@@ -2,3 +2,4 @@
 .gitignore
 .vscode/
 .dockerignore
+kindest.yaml

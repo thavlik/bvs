@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-commissioner
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-commissioner
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-commissioner
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: commissioner
+        imagePullPolicy: {{ .Values.commissioner.imagePullPolicy }}
+        image: {{ .Values.commissioner.image }}
+        command:
+        - commissioner
+        - server
+        - --token-name
+        - {{ .Values.commissioner.tokenName }}
+        - --mongodb-host
+        - {{ .Values.commissioner.mongoDB.host }}
+        - --mongodb-port
+        - "{{ .Values.commissioner.mongoDB.port }}"
+        - --mongodb-database
+        - {{ .Values.commissioner.mongoDB.database }}
+      {{- if .Values.commissioner.metrics }}
+        - --metrics-port
+        - "9091"
+      {{- end }}
+        resources:
+{{ toYaml .Values.commissioner.resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.commissioner.metrics }}
+        - containerPort: 9091
+          name: metrics
+      {{- end }}
+        env:
+        - name: MONGODB_USERNAME
+{{ tpl (toYaml .Values.commissioner.mongoDB.username) . | indent 10 }}
+        - name: MONGODB_PASSWORD
+{{ tpl (toYaml .Values.commissioner.mongoDB.password) . | indent 10 }}
+        - name: MONGODB_CACERT
+{{ tpl (toYaml .Values.commissioner.mongoDB.cacert) . | indent 10 }}

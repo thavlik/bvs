@@ -1,4 +1,4 @@
-package commissioner
+package node
 
 import (
 	"bufio"
@@ -6,23 +6,12 @@ import (
 	"os/exec"
 )
 
-func (s *Server) startNode(
-	nodePort int,
-	nodeConfig,
-	nodeDatabasePath,
-	nodeSocketPath,
-	nodeHostAddr,
-	nodeTopology string,
-) error {
-	s.log.Info("Starting cardano-node...")
+func (s *Server) startProxyServer(port int) error {
+	fmt.Printf("Starting TCP proxy on port %d\n", port)
 	cmd := exec.Command(
-		"cardano-node", "run",
-		"--config", nodeConfig,
-		"--database-path", nodeDatabasePath,
-		"--socket-path", nodeSocketPath,
-		"--host-addr", nodeHostAddr,
-		"--port", fmt.Sprintf("%d", nodePort),
-		"--topology", nodeTopology,
+		"gocat", "unix-to-tcp",
+		"--src", "/mnt/db/node.socket",
+		"--dst", fmt.Sprintf("0.0.0.0:%d", port),
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -32,37 +21,36 @@ func (s *Server) startNode(
 	if err != nil {
 		return err
 	}
-	started := make(chan int, 1)
-	stdoutDone := make(chan error)
+	stdoutDone := make(chan error, 1)
 	go func() {
 		defer close(stdoutDone)
 		stdoutDone <- func() error {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
-				fmt.Println(scanner.Text())
+				fmt.Printf("[gocat.stdout] %s\n", scanner.Text())
 			}
-			return nil
+			return fmt.Errorf("%v", scanner.Err())
 		}()
 	}()
-	stderrDone := make(chan error)
+	stderrDone := make(chan error, 1)
 	go func() {
 		defer close(stderrDone)
 		stderrDone <- func() error {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
-				fmt.Println(scanner.Text())
+				fmt.Printf("[gocat.stderr] %s\n", scanner.Text())
 			}
-			return fmt.Errorf("early exit")
+			return fmt.Errorf("%v", scanner.Err())
 		}()
 	}()
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	exit := make(chan error)
+	exit := make(chan error, 1)
 	go func() {
 		exit <- cmd.Wait()
+		close(exit)
 	}()
-	<-started
 	select {
 	case err := <-stdoutDone:
 		return fmt.Errorf("stdout: %v", err)

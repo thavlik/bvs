@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-node
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  serviceName: {{ .Release.Name }}-node
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-node
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-node
+    spec:
+    {{- if .Values.node.pvc }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.node.pvc }}
+    {{- end }}
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: node
+        imagePullPolicy: {{ .Values.node.imagePullPolicy }}
+        image: {{ .Values.node.image }}
+        readinessProbe:
+          exec:
+            command:
+              - cat
+              - /ready
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 25
+        command:
+        - node
+        - server
+        - --node-config
+        - "/configs/testnet-config.json"
+        - --node-database-path
+        - "/mnt/db"
+        - --node-socket-path
+        - "/mnt/db/node.socket"
+        - --node-host-addr
+        - "0.0.0.0"
+        - --node-port
+        - "1337"
+        - --node-topology
+        - "/configs/testnet-topology.json"
+      {{- if .Values.node.metrics }}
+        - --metrics-port
+        - "9091"
+      {{- end }}
+      {{- if .Values.node.pvc }}
+        volumeMounts:
+        - name: data
+          mountPath: /mnt
+      {{- end }}
+        resources:
+{{ toYaml .Values.node.resources | indent 12 }}
+        ports:
+        - containerPort: 1337
+          name: node
+        - containerPort: 2100
+          name: proxy
+      {{- if .Values.node.metrics }}
+        - containerPort: 9091
+          name: metrics
+      {{- end }}
+        env: []

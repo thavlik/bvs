@@ -1,0 +1,5 @@
+dependencies:
+  - ../cardano-base # no longer needed
+build:
+  name: thavlik/bvs-node
+  context: ../../
