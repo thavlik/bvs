@@ -13,7 +13,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Server) CreateElection(ctx context.Context, req api.CreateElectionRequest) (*api.CreateElectionResponse, error) {
+func (s *Server) CreateElection(
+	ctx context.Context,
+	req api.CreateElectionRequest,
+) (*api.CreateElectionResponse, error) {
+	s.log.Info("CreateElection",
+		zap.String("req.Name", req.Name),
+		zap.Int("req.Deadline", int(req.Deadline)))
 	id := uuid.New().String()
 	dir := filepath.Join("/tmp/policy/", id)
 	if err := os.MkdirAll(dir, 0644); err != nil {
@@ -27,9 +33,7 @@ func (s *Server) CreateElection(ctx context.Context, req api.CreateElectionReque
 	pubKeyPath := filepath.Join(dir, "key.pub")
 	privKeyPath := filepath.Join(dir, "key.priv")
 	cmd := exec.Command(
-		"cardano-cli",
-		"address",
-		"key-gen",
+		"cardano-cli", "address", "key-gen",
 		"--verification-key-file", pubKeyPath,
 		"--signing-key-file", privKeyPath,
 	)
