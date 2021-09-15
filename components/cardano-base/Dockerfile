@@ -71,5 +71,3 @@ RUN mkdir -p ~/.local/bin && cd ~/cardano-src/cardano-node \
 ENV PATH="~/.local/bin:$PATH"
 
 SHELL ["/bin/bash", "-c"]
-
-

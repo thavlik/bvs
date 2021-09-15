@@ -1,19 +1,12 @@
 imagePullSecrets: []
 
-node:
-  image: thavlik/bvs-node:latest
+commissioner:
+  image: thavlik/bvs-commissioner:latest
   imagePullPolicy: Always
   replicas: 1
   resources:
     limits:
-      memory: 128Mi
-      cpu: 50m
+      memory: 512Mi
+      cpu: 1000m
+  tokenName: "Vote"
 
-gateway:
-  image: thavlik/bvs-gateway:latest
-  imagePullPolicy: Always
-  replicas: 1
-  resources:
-    limits:
-      memory: 128Mi
-      cpu: 50m

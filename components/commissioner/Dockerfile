@@ -11,5 +11,8 @@ COPY --from=builder /go/src/github.com/thavlik/bvs/components/commissioner/cmd/c
 COPY components/commissioner/configs /configs
 ENV CARDANO_CONFIG_PATH="/configs"
 ENV CARDANO_DB_PATH="/db"
+RUN mv /root/.local/bin/cardano-node /usr/local/bin
+RUN mv /root/.local/bin/cardano-cli /usr/local/bin
+RUN mkdir /db
 CMD ["commissioner", "server"]
 

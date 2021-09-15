@@ -39,8 +39,7 @@ func (s *Server) startNode(
 		stdoutDone <- func() error {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
-				text := scanner.Text()
-				s.log.Info(text)
+				fmt.Println(scanner.Text())
 			}
 			return nil
 		}()
@@ -51,7 +50,7 @@ func (s *Server) startNode(
 		stderrDone <- func() error {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
-				s.log.Error(scanner.Text())
+				fmt.Println(scanner.Text())
 			}
 			return fmt.Errorf("early exit")
 		}()

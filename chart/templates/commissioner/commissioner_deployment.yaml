@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-commissioner
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  replicas: {{ .Values.commissioner.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-commissioner
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-commissioner
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: commissioner
+        imagePullPolicy: {{ .Values.commissioner.imagePullPolicy }}
+        image: {{ .Values.commissioner.image }}
+        command:
+        - commissioner
+        - server
+        - --token-name
+        - {{ .Values.commissioner.tokenName }}
+        - --node-config
+        - "/configs/testnet-config.json"
+        - --node-database-path
+        - "/db"
+        - --node-socket-path
+        - "/db/node.socket"
+        - --node-host-addr
+        - "0.0.0.0"
+        - --node-port
+        - "1337"
+        - --node-topology
+        - "/configs/testnet-topology.json"
+        resources:
+{{ toYaml .Values.commissioner.resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 1337
+          name: cardano
+        env: []

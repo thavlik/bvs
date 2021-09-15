@@ -9,3 +9,6 @@ env:
         name: chart/
         releaseName: bvs
         namespace: bvs
+        values:
+          commissioner:
+            image: localhost:5000/thavlik/bvs-commissioner:latest
