@@ -9,4 +9,6 @@ commissioner:
       memory: 512Mi
       cpu: 1000m
   tokenName: "Vote"
+  pvc: ""
+  # TODO: configure volumes
 

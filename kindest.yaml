@@ -4,6 +4,9 @@ env:
   kubernetes:
     resources:
       - test/fixtures/
+      - test/fixtures/secrets
+      - components/kube-prometheus/manifests/setup/
+      - components/kube-prometheus/manifests/
     charts:
       bvs:
         name: chart/
@@ -11,7 +14,7 @@ env:
         namespace: bvs
         values:
           commissioner:
-            image: localhost:5000/thavlik/bvs-commissioner:latest
+            pvc: cardano-db
 test:
   - name: e2e
     defaultTimeout: 15m

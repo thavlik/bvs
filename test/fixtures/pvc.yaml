@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cardano-db
+  namespace: bvs
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50G

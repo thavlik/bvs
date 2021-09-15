@@ -1,11 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-commissioner
   labels:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 spec:
-  replicas: {{ .Values.commissioner.replicas }}
+  serviceName: {{ .Release.Name }}-commissioner
   selector:
     matchLabels:
       app: {{ .Release.Name }}-commissioner
@@ -14,6 +14,12 @@ spec:
       labels:
         app: {{ .Release.Name }}-commissioner
     spec:
+    {{- if .Values.commissioner.pvc }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.commissioner.pvc }}
+    {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 10 }}
@@ -30,15 +36,20 @@ spec:
         - --node-config
         - "/configs/testnet-config.json"
         - --node-database-path
-        - "/db"
+        - "/mnt/db"
         - --node-socket-path
-        - "/db/node.socket"
+        - "/node.socket"
         - --node-host-addr
         - "0.0.0.0"
         - --node-port
         - "1337"
         - --node-topology
         - "/configs/testnet-topology.json"
+      {{- if .Values.commissioner.pvc }}
+        volumeMounts:
+        - name: data
+          mountPath: /mnt
+      {{- end }}
         resources:
 {{ toYaml .Values.commissioner.resources | indent 12 }}
         ports:
