@@ -8,9 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
+	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
 	"go.uber.org/zap"
 )
 
@@ -45,20 +47,24 @@ func (s *Server) CreateElection(
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: store info about election in database
-	if err := s.storage.Store(id, string(signingKey)); err != nil {
-		return nil, fmt.Errorf("storage: %v", err)
-	}
-
-	verificationKeyData, err := ioutil.ReadFile(pubKeyPath)
+	verificationKey, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
 		return nil, err
 	}
+	// Store info about election in database
+	if err := s.storage.StoreElection(&storage.Election{
+		ID:              id,
+		Deadline:        time.Now().Add(365 * 24 * time.Hour),
+		SigningKey:      string(signingKey),
+		VerificationKey: string(verificationKey),
+	}); err != nil {
+		return nil, fmt.Errorf("storage: %v", err)
+	}
 	var vkey api.VerificationKey
-	if err := json.Unmarshal(verificationKeyData, &vkey); err != nil {
+	if err := json.Unmarshal(verificationKey, &vkey); err != nil {
 		return nil, fmt.Errorf("unmarshal: %v", err)
 	}
+	s.log.Info("Created election", zap.String("id", id))
 	return &api.CreateElectionResponse{
 		ID:              id,
 		VerificationKey: vkey,

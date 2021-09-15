@@ -147,10 +147,20 @@ func queryAddress(address string) (*addressInfo, error) {
 }
 
 func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.MintVoteResponse, error) {
-	// TODO: fetch these values
-	var policySigningKey string
-	var policyVerificationKey string
-	var paymentSigningKey string
+	// Look up the election (policy) signing key
+	election, err := s.storage.RetrieveElection(req.Election)
+	if err != nil {
+		return nil, fmt.Errorf("storage: %v", err)
+	}
+	policySigningKey := election.SigningKey
+	policyVerificationKey := election.VerificationKey
+
+	// Look up auditor (minter) signing key
+	minter, err := s.storage.RetrieveMinter(req.Auditor.Agent)
+	if err != nil {
+		return nil, fmt.Errorf("storage: %v", err)
+	}
+	paymentSigningKey := minter.SigningKey
 
 	// Create temporary directory for interacting with cardano-cli
 	id := uuid.New().String()
@@ -169,6 +179,14 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	if err := ioutil.WriteFile(
 		paymentSigningKeyPath,
 		[]byte(paymentSigningKey),
+		0644,
+	); err != nil {
+		return nil, err
+	}
+	policyVerificationKeyPath := filepath.Join(rootDir, "policy.vkey")
+	if err := ioutil.WriteFile(
+		policyVerificationKeyPath,
+		[]byte(policyVerificationKey),
 		0644,
 	); err != nil {
 		return nil, err
@@ -200,7 +218,7 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	// Maybe a low number is more appropriate?
 	invalidHereafter := currentSlot + 31557600 // one year
 
-	mintingScript, err := generateMiningScript(invalidHereafter, policyVerificationKey)
+	mintingScript, err := generateMiningScript(invalidHereafter, policyVerificationKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("generateMiningScript: %v", err)
 	}
