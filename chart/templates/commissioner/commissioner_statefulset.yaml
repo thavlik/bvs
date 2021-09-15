@@ -73,6 +73,6 @@ spec:
       {{- end }}
         env:
         - name: MONGODB_USERNAME
-{{ tpl (toYaml .Values.postgres.username) . | indent 10 }}
+{{ tpl (toYaml .Values.commissioner.mongoDB.username) . | indent 10 }}
         - name: MONGODB_PASSWORD
-{{ tpl (toYaml .Values.postgres.password) . | indent 10 }}
+{{ tpl (toYaml .Values.commissioner.mongoDB.password) . | indent 10 }}
