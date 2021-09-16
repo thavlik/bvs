@@ -309,6 +309,8 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 		return nil, fmt.Errorf("submit: %v", err)
 	}
 
+	fmt.Printf("Minted vote %s to %s\n", id, voter)
+
 	// TODO: get minted asset ID
 	return &api.MintVoteResponse{
 		ID:    id,
