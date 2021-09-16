@@ -14,18 +14,20 @@ import (
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
 )
 
-func metadataJson(policyID string) string {
+func metadataJson(id, policyID string, timestamp int64) string {
 	return fmt.Sprintf(`{
 	"721": {
 		"%s": {
 			"Vote": {
 				"description": "This is my first NFT thanks to the Cardano foundation",
 				"name": "Cardano foundation NFT guide token",
+				"id": "%s",
+				"timestamp": %d,
 				"id": 1
 			}
 		}
 	}
-}`, policyID)
+}`, policyID, id, timestamp)
 }
 
 func generateMintingScript(
@@ -205,7 +207,8 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 
 	// https://developers.cardano.org/docs/native-tokens/minting-nfts/
 	policyID := election.PolicyID
-	address := "addr_test1vqd42cm0w0v7z9rve320kecjjsl7fdy8xxlqm28mg970d3c5ss752"
+	minterAddress := "addr_test1vqaqut4xyj7m6guettmcul9d2crt2vx6uxgjymr0n0ngelsa5vhhe"
+	voter := req.Voter
 	tokenName := "Vote"
 	tokenAmount := 1
 
@@ -221,16 +224,15 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	}
 
 	// Get info about the minter's last transaction
-	// TODO: get payment address
-	addressInfo, err := queryAddress(address)
+	minterInfo, err := queryAddress(minterAddress)
 	if err != nil {
 		return nil, fmt.Errorf("queryAddress: %v", err)
 	}
-	txHash := addressInfo.txHash
-	txIx := addressInfo.txIx
-	output := addressInfo.lovelace
+	txHash := minterInfo.txHash
+	txIx := minterInfo.txIx
+	output := minterInfo.lovelace
 
-	metadata := metadataJson(policyID)
+	metadata := metadataJson(id, policyID, req.Auditor.Timestamp)
 	metadataJsonPath := filepath.Join(rootDir, "metadata.json")
 	if err := ioutil.WriteFile(
 		metadataJsonPath,
@@ -242,11 +244,14 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 
 	// Build the transaction without specifying a fee
 	rawTxPath := filepath.Join(rootDir, "matx.raw")
+	giftAmount := 2000000
+	output -= giftAmount
 	if _, err := Exec(
 		"cardano-cli", "transaction", "build-raw",
-		"--fee", "300000",
+		"--fee", "0",
 		"--tx-in", fmt.Sprintf("%s#%d", txHash, txIx),
-		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, address, output, tokenAmount, policyID, tokenName),
+		"--tx-out", fmt.Sprintf(`%s + %d`, minterAddress, output),
+		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, voter, giftAmount, tokenAmount, policyID, tokenName),
 		"--mint", fmt.Sprintf("%d %s.%s", tokenAmount, policyID, tokenName),
 		"--minting-script-file", mintingScriptPath,
 		"--metadata-json-file", metadataJsonPath,
@@ -271,7 +276,8 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 		"cardano-cli", "transaction", "build-raw",
 		"--fee", fmt.Sprintf("%d", fee),
 		"--tx-in", fmt.Sprintf("%s#%d", txHash, txIx),
-		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, address, output, tokenAmount, policyID, tokenName),
+		"--tx-out", fmt.Sprintf(`%s + %d`, minterAddress, output),
+		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, voter, giftAmount, tokenAmount, policyID, tokenName),
 		"--mint", fmt.Sprintf("%d %s.%s", tokenAmount, policyID, tokenName),
 		"--minting-script-file", mintingScriptPath,
 		"--metadata-json-file", metadataJsonPath,

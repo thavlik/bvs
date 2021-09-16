@@ -20,6 +20,7 @@ type Minter struct {
 	ID              string
 	SigningKey      string
 	VerificationKey string
+	Address         string
 }
 
 type Storage interface {

@@ -3,6 +3,7 @@ package definitions
 type Commissioner interface {
 	CreateElection(CreateElectionRequest) CreateElectionResponse
 	CreateMinter(CreateMinterRequest) CreateMinterResponse
+	CreateVoter(CreateVoterRequest) CreateVoterResponse
 	MintVote(MintVoteRequest) MintVoteResponse
 }
 
@@ -16,8 +17,18 @@ type Key struct {
 }
 
 type CreateMinterRequest struct {
-	SigningKey      Key `json:"signingKey"`      // contents of signing key file
-	VerificationKey Key `json:"verificationKey"` // contents of verification key file
+	SigningKey      Key    `json:"signingKey"`      // contents of signing key file
+	VerificationKey Key    `json:"verificationKey"` // contents of verification key file
+	Address         string `json:"address"`
+}
+
+type CreateVoterRequest struct {
+}
+
+type CreateVoterResponse struct {
+	SigningKey      Key    `json:"signingKey"`      // contents of signing key file
+	VerificationKey Key    `json:"verificationKey"` // contents of verification key file
+	Address         string `json:"address"`         // payment address
 }
 
 type CreateMinterResponse struct {

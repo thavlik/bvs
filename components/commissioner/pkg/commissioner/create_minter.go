@@ -27,6 +27,7 @@ func (s *Server) CreateMinter(
 		ID:              id,
 		SigningKey:      string(skey),
 		VerificationKey: string(vkey),
+		Address:         req.Address,
 	}); err != nil {
 		return nil, fmt.Errorf("storage: %v", err)
 	}

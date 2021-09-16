@@ -23,7 +23,7 @@ func CreateClient(t *testing.T) client.Client {
 type Wallet struct {
 	SigningKey      string
 	VerificationKey string
-	Addreses        string
+	Address         string
 }
 
 func GetWallet(t *testing.T) *Wallet {
@@ -39,6 +39,6 @@ func GetWallet(t *testing.T) *Wallet {
 	return &Wallet{
 		SigningKey:      skey,
 		VerificationKey: vkey,
-		Addreses:        addr,
+		Address:         addr,
 	}
 }

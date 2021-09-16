@@ -108,6 +108,45 @@ func (c *commissionerClient) CreateMinter(ctx context.Context, req CreateMinterR
 	return response, nil
 }
 
+func (c *commissionerClient) CreateVoter(ctx context.Context, req CreateVoterRequest) (*CreateVoterResponse, error) {
+	body, err := json.Marshal(&req)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshal")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Commissioner.CreateVoter", c.endpoint),
+		bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.Wrap(err, "request")
+	}
+	if c.username != "" {
+		request.SetBasicAuth(c.username, c.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "body")
+	}
+	if resp.StatusCode != 200 {
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("%d: %s", resp.StatusCode, string(body))
+	}
+	response := &CreateVoterResponse{}
+	if err := json.Unmarshal(body, response); err != nil {
+		return nil, errors.Wrap(err, "unmarshal")
+	}
+	return response, nil
+}
+
 func (c *commissionerClient) MintVote(ctx context.Context, req MintVoteRequest) (*MintVoteResponse, error) {
 	body, err := json.Marshal(&req)
 	if err != nil {

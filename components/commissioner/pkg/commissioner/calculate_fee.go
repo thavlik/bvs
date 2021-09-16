@@ -13,7 +13,7 @@ func calculateFee(rawTxPath, protocolJsonPath string) (int, error) {
 			`cardano-cli transaction calculate-min-fee \
 				--tx-body-file %s \
 				--tx-in-count 1 \
-				--tx-out-count 1 \
+				--tx-out-count 2 \
 				--witness-count 1 \
 				--testnet-magic %d \
 				--protocol-params-file %s`,

@@ -31,6 +31,7 @@ type mongoMinter struct {
 	ID              string `bson:"_id"`
 	SigningKey      string `bson:"signingKey"`
 	VerificationKey string `bson:"verificationKey"`
+	Address         string `bson:"address"`
 }
 
 func NewMongoDBStorage(
@@ -112,6 +113,7 @@ func (s *mongoStorage) StoreMinter(v *storage.Minter) error {
 		ID:              v.ID,
 		SigningKey:      v.SigningKey,
 		VerificationKey: v.VerificationKey,
+		Address:         v.Address,
 	}); err != nil {
 		return fmt.Errorf("mongo insert: %v", err)
 	}
@@ -133,5 +135,6 @@ func (s *mongoStorage) RetrieveMinter(id string) (*storage.Minter, error) {
 		ID:              v.ID,
 		SigningKey:      v.SigningKey,
 		VerificationKey: v.VerificationKey,
+		Address:         v.Address,
 	}, nil
 }

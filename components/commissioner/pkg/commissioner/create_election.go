@@ -103,7 +103,7 @@ func (s *Server) CreateElection(
 	if err := json.Unmarshal(verificationKey, &vkey); err != nil {
 		return nil, fmt.Errorf("unmarshal: %v", err)
 	}
-	fmt.Printf("Created election, id=%s\n", id)
+	fmt.Printf("Created election %s\n", id)
 	return &api.CreateElectionResponse{
 		ID:              id,
 		PolicyID:        policyID,

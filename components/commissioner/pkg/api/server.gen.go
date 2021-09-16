@@ -32,6 +32,15 @@ var (
 		Help: "Auto-generated metric incremented on every call to Commissioner.CreateMinter that does not return with an error",
 	})
 
+	commissionerCreateVoterTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_create_voter_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.CreateVoter",
+	})
+	commissionerCreateVoterSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_create_voter_success_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.CreateVoter that does not return with an error",
+	})
+
 	commissionerMintVoteTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "commissioner_mint_vote_total",
 		Help: "Auto-generated metric incremented on every call to Commissioner.MintVote",
@@ -45,6 +54,7 @@ var (
 type Commissioner interface {
 	CreateElection(context.Context, CreateElectionRequest) (*CreateElectionResponse, error)
 	CreateMinter(context.Context, CreateMinterRequest) (*CreateMinterResponse, error)
+	CreateVoter(context.Context, CreateVoterRequest) (*CreateVoterResponse, error)
 	MintVote(context.Context, MintVoteRequest) (*MintVoteResponse, error)
 }
 
@@ -60,6 +70,7 @@ func RegisterCommissioner(server *otohttp.Server, commissioner Commissioner) {
 	}
 	server.Register("Commissioner", "CreateElection", handler.handleCreateElection)
 	server.Register("Commissioner", "CreateMinter", handler.handleCreateMinter)
+	server.Register("Commissioner", "CreateVoter", handler.handleCreateVoter)
 	server.Register("Commissioner", "MintVote", handler.handleMintVote)
 }
 
@@ -101,6 +112,26 @@ func (s *commissionerServer) handleCreateMinter(w http.ResponseWriter, r *http.R
 		return
 	}
 	commissionerCreateMinterSuccessTotal.Inc()
+}
+
+func (s *commissionerServer) handleCreateVoter(w http.ResponseWriter, r *http.Request) {
+	commissionerCreateVoterTotal.Inc()
+	var request CreateVoterRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.commissioner.CreateVoter(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	commissionerCreateVoterSuccessTotal.Inc()
 }
 
 func (s *commissionerServer) handleMintVote(w http.ResponseWriter, r *http.Request) {
@@ -146,13 +177,24 @@ type CreateElectionResponse struct {
 }
 
 type CreateMinterRequest struct {
-	SigningKey      Key `json:"signingKey"`
-	VerificationKey Key `json:"verificationKey"`
+	SigningKey      Key    `json:"signingKey"`
+	VerificationKey Key    `json:"verificationKey"`
+	Address         string `json:"address"`
 }
 
 type CreateMinterResponse struct {
 	ID    string `json:"id"`
 	Error string `json:"error,omitempty"`
+}
+
+type CreateVoterRequest struct {
+}
+
+type CreateVoterResponse struct {
+	SigningKey      Key    `json:"signingKey"`
+	VerificationKey Key    `json:"verificationKey"`
+	Address         string `json:"address"`
+	Error           string `json:"error,omitempty"`
 }
 
 type MintVoteRequest struct {
