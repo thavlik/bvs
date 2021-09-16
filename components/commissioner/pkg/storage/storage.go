@@ -2,16 +2,17 @@ package storage
 
 import (
 	"fmt"
-	"time"
 )
 
 var ErrKeyNotFound = fmt.Errorf("key not found")
 
 type Election struct {
-	ID              string
-	SigningKey      string
-	VerificationKey string
-	Deadline        time.Time
+	ID               string
+	SigningKey       string
+	VerificationKey  string
+	InvalidHereafter int
+	MintingScript    string
+	PolicyID         string
 }
 
 type Minter struct {

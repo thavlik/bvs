@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
 	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
 )
@@ -19,7 +19,8 @@ func (s *Server) CreateElection(
 	req api.CreateElectionRequest,
 ) (*api.CreateElectionResponse, error) {
 	fmt.Printf("CreateElection %#v\n", req)
-	dir := filepath.Join("/tmp/policy/", req.Name)
+	id := uuid.New().String()
+	dir := filepath.Join("/tmp/policy/", id)
 	if err := os.MkdirAll(dir, 0644); err != nil {
 		return nil, err
 	}
@@ -30,12 +31,11 @@ func (s *Server) CreateElection(
 	}()
 	pubKeyPath := filepath.Join(dir, "key.pub")
 	privKeyPath := filepath.Join(dir, "key.priv")
-	cmd := exec.Command(
+	if err := (exec.Command(
 		"cardano-cli", "address", "key-gen",
 		"--verification-key-file", pubKeyPath,
 		"--signing-key-file", privKeyPath,
-	)
-	if err := cmd.Run(); err != nil {
+	)).Run(); err != nil {
 		return nil, err
 	}
 	signingKey, err := ioutil.ReadFile(pubKeyPath)
@@ -46,12 +46,45 @@ func (s *Server) CreateElection(
 	if err != nil {
 		return nil, err
 	}
-	// Store info about election in database
+	currentSlot, err := getCurrentSlot()
+	if err != nil {
+		return nil, err
+	}
+	invalidHereafter := currentSlot + 31557600 // one year
+	mintingScript, err := generateMintingScript(invalidHereafter, pubKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("generateMintingScript: %v", err)
+	}
+	scriptPath := filepath.Join(dir, "policy.script")
+	if err := ioutil.WriteFile(
+		scriptPath,
+		[]byte(mintingScript),
+		0644,
+	); err != nil {
+		return nil, err
+	}
+	policyIDPath := filepath.Join(dir, "policyID")
+	if err := Exec(
+		"bash", "-c",
+		fmt.Sprintf(
+			"cardano-cli transaction policyid --script-file %s >> %s",
+			scriptPath,
+			policyIDPath,
+		),
+	); err != nil {
+		return nil, err
+	}
+	policyID, err := ioutil.ReadFile(policyIDPath)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.storage.StoreElection(&storage.Election{
-		ID:              req.Name,
-		Deadline:        time.Now().Add(365 * 24 * time.Hour),
-		SigningKey:      string(signingKey),
-		VerificationKey: string(verificationKey),
+		ID:               id,
+		SigningKey:       string(signingKey),
+		VerificationKey:  string(verificationKey),
+		PolicyID:         string(policyID),
+		MintingScript:    mintingScript,
+		InvalidHereafter: invalidHereafter,
 	}); err != nil {
 		return nil, fmt.Errorf("storage: %v", err)
 	}
@@ -61,7 +94,7 @@ func (s *Server) CreateElection(
 	}
 	fmt.Printf("Created election, id=%s\n", req.Name)
 	return &api.CreateElectionResponse{
-		ID:              req.Name,
+		ID:              id,
 		VerificationKey: vkey,
 	}, nil
 }

@@ -3,7 +3,6 @@ package mongodb_storage
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,10 +18,12 @@ type mongoStorage struct {
 }
 
 type mongoElection struct {
-	ID              string `bson:"_id"`
-	SigningKey      string `bson:"signingKey"`
-	VerificationKey string `bson:"verificationKey"`
-	Deadline        int64  `bson:"deadline"`
+	ID               string `bson:"_id"`
+	SigningKey       string `bson:"signingKey"`
+	VerificationKey  string `bson:"verificationKey"`
+	PolicyID         string `bson:"policyId"`
+	MintingScript    string `bson:"mintingScript"`
+	InvalidHereafter int    `bson:"invalidHereafter"`
 }
 
 type mongoMinter struct {
@@ -70,10 +71,12 @@ func NewMongoDBStorage(
 
 func (s *mongoStorage) StoreElection(v *storage.Election) error {
 	if _, err := s.elections.InsertOne(context.TODO(), &mongoElection{
-		ID:              v.ID,
-		SigningKey:      v.SigningKey,
-		VerificationKey: v.VerificationKey,
-		Deadline:        v.Deadline.UnixNano(),
+		ID:               v.ID,
+		SigningKey:       v.SigningKey,
+		VerificationKey:  v.VerificationKey,
+		PolicyID:         v.PolicyID,
+		MintingScript:    v.MintingScript,
+		InvalidHereafter: v.InvalidHereafter,
 	}); err != nil {
 		return fmt.Errorf("mongo insert: %v", err)
 	}
@@ -92,10 +95,12 @@ func (s *mongoStorage) RetrieveElection(id string) (*storage.Election, error) {
 		return nil, fmt.Errorf("decode: %v", err)
 	}
 	return &storage.Election{
-		ID:              v.ID,
-		SigningKey:      v.SigningKey,
-		VerificationKey: v.VerificationKey,
-		Deadline:        time.Unix(0, v.Deadline),
+		ID:               v.ID,
+		SigningKey:       v.SigningKey,
+		VerificationKey:  v.VerificationKey,
+		PolicyID:         v.PolicyID,
+		MintingScript:    v.MintingScript,
+		InvalidHereafter: v.InvalidHereafter,
 	}, nil
 }
 

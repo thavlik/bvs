@@ -7,8 +7,6 @@ type Commissioner interface {
 }
 
 type CreateElectionRequest struct {
-	Name     string `json:"name"`
-	Deadline int64  `json:"deadline"`
 }
 
 type Key struct {
