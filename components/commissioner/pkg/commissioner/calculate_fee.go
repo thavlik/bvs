@@ -2,15 +2,12 @@ package commissioner
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os/exec"
 	"strconv"
+	"strings"
 )
 
-func calculateFee(
-	rawTxPath string,
-) (int, error) {
-	cmd := exec.Command(
+func calculateFee(rawTxPath, protocolJsonPath string) (int, error) {
+	stdout, err := Exec(
 		"bash", "-c",
 		fmt.Sprintf(
 			`cardano-cli transaction calculate-min-fee \
@@ -18,24 +15,17 @@ func calculateFee(
 				--tx-in-count 1 \
 				--tx-out-count 1 \
 				--witness-count 1 \
-				--mainnet \
-				--protocol-params-file protocol.json \
-			| cut -d " " -f1)`,
+				--testnet-magic %d \
+				--protocol-params-file %s`,
 			rawTxPath,
+			CardanoTestNetMagic,
+			protocolJsonPath,
 		),
 	)
-	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return 0, err
 	}
-	if err := cmd.Run(); err != nil {
-		return 0, fmt.Errorf("cardano-cli: %v", err)
-	}
-	output, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return 0, err
-	}
-	fee, err := strconv.ParseInt(string(output), 10, 64)
+	fee, err := strconv.ParseInt(strings.Split(stdout, " ")[0], 10, 64)
 	if err != nil {
 		return 0, err
 	}

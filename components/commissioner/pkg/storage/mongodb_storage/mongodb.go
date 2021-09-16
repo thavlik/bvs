@@ -24,6 +24,7 @@ type mongoElection struct {
 	PolicyID         string `bson:"policyId"`
 	MintingScript    string `bson:"mintingScript"`
 	InvalidHereafter int    `bson:"invalidHereafter"`
+	Protocol         string `bson:"protocol"`
 }
 
 type mongoMinter struct {
@@ -77,6 +78,7 @@ func (s *mongoStorage) StoreElection(v *storage.Election) error {
 		PolicyID:         v.PolicyID,
 		MintingScript:    v.MintingScript,
 		InvalidHereafter: v.InvalidHereafter,
+		Protocol:         v.Protocol,
 	}); err != nil {
 		return fmt.Errorf("mongo insert: %v", err)
 	}
@@ -101,6 +103,7 @@ func (s *mongoStorage) RetrieveElection(id string) (*storage.Election, error) {
 		PolicyID:         v.PolicyID,
 		MintingScript:    v.MintingScript,
 		InvalidHereafter: v.InvalidHereafter,
+		Protocol:         v.Protocol,
 	}, nil
 }
 

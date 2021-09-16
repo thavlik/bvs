@@ -36,9 +36,6 @@ func GetWallet(t *testing.T) *Wallet {
 	skey := string(secret.Data["payment.skey"])
 	vkey := string(secret.Data["payment.vkey"])
 	addr := string(secret.Data["addr"])
-	println(skey)
-	println(vkey)
-	println(addr)
 	return &Wallet{
 		SigningKey:      skey,
 		VerificationKey: vkey,

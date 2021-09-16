@@ -13,6 +13,7 @@ type Election struct {
 	InvalidHereafter int
 	MintingScript    string
 	PolicyID         string
+	Protocol         string
 }
 
 type Minter struct {

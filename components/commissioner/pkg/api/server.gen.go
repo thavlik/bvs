@@ -130,8 +130,6 @@ type Auditor struct {
 }
 
 type CreateElectionRequest struct {
-	Name     string `json:"name"`
-	Deadline int64  `json:"deadline"`
 }
 
 type Key struct {
@@ -142,6 +140,7 @@ type Key struct {
 
 type CreateElectionResponse struct {
 	ID              string `json:"id"`
+	PolicyID        string `json:"policyID"`
 	VerificationKey Key    `json:"verificationKey"`
 	Error           string `json:"error,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/thavlik/bvs/components/commissioner/pkg/api"
@@ -29,6 +30,14 @@ func (s *Server) CreateElection(
 			fmt.Printf("failed to delete policy files: %v\n", err)
 		}
 	}()
+	protocolJsonPath := filepath.Join(dir, "protocol.json")
+	if err := queryProtocol(protocolJsonPath); err != nil {
+		return nil, fmt.Errorf("queryProtocol: %v", err)
+	}
+	protocolJson, err := ioutil.ReadFile(protocolJsonPath)
+	if err != nil {
+		return nil, err
+	}
 	pubKeyPath := filepath.Join(dir, "key.pub")
 	privKeyPath := filepath.Join(dir, "key.priv")
 	if err := (exec.Command(
@@ -38,7 +47,7 @@ func (s *Server) CreateElection(
 	)).Run(); err != nil {
 		return nil, err
 	}
-	signingKey, err := ioutil.ReadFile(pubKeyPath)
+	signingKey, err := ioutil.ReadFile(privKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -74,17 +83,19 @@ func (s *Server) CreateElection(
 	); err != nil {
 		return nil, err
 	}
-	policyID, err := ioutil.ReadFile(policyIDPath)
+	policyIDBytes, err := ioutil.ReadFile(policyIDPath)
 	if err != nil {
 		return nil, err
 	}
+	policyID := strings.TrimSpace(string(policyIDBytes))
 	if err := s.storage.StoreElection(&storage.Election{
 		ID:               id,
 		SigningKey:       string(signingKey),
 		VerificationKey:  string(verificationKey),
-		PolicyID:         string(policyID),
+		PolicyID:         policyID,
 		MintingScript:    mintingScript,
 		InvalidHereafter: invalidHereafter,
+		Protocol:         string(protocolJson),
 	}); err != nil {
 		return nil, fmt.Errorf("storage: %v", err)
 	}
@@ -92,9 +103,10 @@ func (s *Server) CreateElection(
 	if err := json.Unmarshal(verificationKey, &vkey); err != nil {
 		return nil, fmt.Errorf("unmarshal: %v", err)
 	}
-	fmt.Printf("Created election, id=%s\n", req.Name)
+	fmt.Printf("Created election, id=%s\n", id)
 	return &api.CreateElectionResponse{
 		ID:              id,
+		PolicyID:        policyID,
 		VerificationKey: vkey,
 	}, nil
 }

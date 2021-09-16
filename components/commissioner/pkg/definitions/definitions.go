@@ -25,7 +25,8 @@ type CreateMinterResponse struct {
 }
 
 type CreateElectionResponse struct {
-	ID              string `json:"id"`              // policyID; https://developers.cardano.org/docs/native-tokens/minting-nfts/
+	ID              string `json:"id"`              // generated UUID
+	PolicyID        string `json:"policyID"`        // https://developers.cardano.org/docs/native-tokens/minting-nfts/
 	VerificationKey Key    `json:"verificationKey"` // contents of verification key file
 }
 

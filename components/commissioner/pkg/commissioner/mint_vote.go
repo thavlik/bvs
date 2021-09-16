@@ -52,6 +52,10 @@ func generateMintingScript(
 	}
 	keyHash := strings.TrimSpace(string(body))
 	return fmt.Sprintf(
+		`{"type": "sig", "keyHash": "%s"}`,
+		keyHash,
+	), nil
+	return fmt.Sprintf(
 		`{
 	"type": "all",
 	"scripts": [{
@@ -190,6 +194,14 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	); err != nil {
 		return nil, err
 	}
+	protocolJsonPath := filepath.Join(rootDir, "protocol.json")
+	if err := ioutil.WriteFile(
+		protocolJsonPath,
+		[]byte(election.Protocol),
+		0644,
+	); err != nil {
+		return nil, err
+	}
 
 	// https://developers.cardano.org/docs/native-tokens/minting-nfts/
 	policyID := election.PolicyID
@@ -199,9 +211,9 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 
 	mintingScript := election.MintingScript
 	invalidHereafter := election.InvalidHereafter
-	mintingScriptFile := filepath.Join(rootDir, "policy.script")
+	mintingScriptPath := filepath.Join(rootDir, "policy.script")
 	if err := ioutil.WriteFile(
-		mintingScriptFile,
+		mintingScriptPath,
 		[]byte(mintingScript),
 		0644,
 	); err != nil {
@@ -219,9 +231,9 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	output := addressInfo.lovelace
 
 	metadata := metadataJson(policyID)
-	metadataJsonFile := filepath.Join(rootDir, "metadata.json")
+	metadataJsonPath := filepath.Join(rootDir, "metadata.json")
 	if err := ioutil.WriteFile(
-		metadata,
+		metadataJsonPath,
 		[]byte(metadata),
 		0644,
 	); err != nil {
@@ -230,46 +242,22 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 
 	// Build the transaction without specifying a fee
 	rawTxPath := filepath.Join(rootDir, "matx.raw")
-	txOut := fmt.Sprintf(`%s+%d+%d %s.%s`, address, output, tokenAmount, policyID, tokenName)
-	fmt.Printf("txout: %s\n", txOut)
-	cmd := exec.Command(
+	if _, err := Exec(
 		"cardano-cli", "transaction", "build-raw",
 		"--fee", "300000",
 		"--tx-in", fmt.Sprintf("%s#%d", txHash, txIx),
-		"--tx-out", txOut,
-		fmt.Sprintf(`--mint="%d %s.%s"`, tokenAmount, policyID, tokenName),
-		"--minting-script-file", mintingScriptFile,
-		"--metadata-json-file", metadataJsonFile,
+		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, address, output, tokenAmount, policyID, tokenName),
+		"--mint", fmt.Sprintf("%d %s.%s", tokenAmount, policyID, tokenName),
+		"--minting-script-file", mintingScriptPath,
+		"--metadata-json-file", metadataJsonPath,
 		"--invalid-hereafter", fmt.Sprintf("%d", invalidHereafter),
 		"--out-file", rawTxPath,
-	)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, err
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return nil, err
-	}
-	if err := cmd.Start(); err != nil {
-		return nil, err
-	}
-	stdoutBytes, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return nil, err
-	}
-	stderrBytes, err := ioutil.ReadAll(stderr)
-	if err != nil {
-		return nil, err
-	}
-	if err := cmd.Wait(); err != nil {
-		fmt.Println(string(stdoutBytes))
-		fmt.Println(string(stderrBytes))
-		return nil, fmt.Errorf("cardano-cli draft tx: %v", err)
+	); err != nil {
+		return nil, fmt.Errorf("draft tx: %v", err)
 	}
 
 	// Calculate the fee
-	fee, err := calculateFee(rawTxPath)
+	fee, err := calculateFee(rawTxPath, protocolJsonPath)
 	if err != nil {
 		return nil, fmt.Errorf("calculateFee: %v", err)
 	}
@@ -279,40 +267,40 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	output -= fee
 
 	// Rebuild the transaction with the calculated fee
-	if err := (exec.Command(
+	if _, err := Exec(
 		"cardano-cli", "transaction", "build-raw",
 		"--fee", fmt.Sprintf("%d", fee),
 		"--tx-in", fmt.Sprintf("%s#%d", txHash, txIx),
-		"--tx-out", fmt.Sprintf(`%s+%d+%d %s.%s`, address, output, tokenAmount, policyID, tokenName),
-		fmt.Sprintf(`--mint="%d %s.%s"`, tokenAmount, policyID, tokenName),
-		"--minting-script-file", mintingScriptFile,
-		"--metadata-json-file", metadataJsonFile,
+		"--tx-out", fmt.Sprintf(`%s + %d + %d %s.%s`, address, output, tokenAmount, policyID, tokenName),
+		"--mint", fmt.Sprintf("%d %s.%s", tokenAmount, policyID, tokenName),
+		"--minting-script-file", mintingScriptPath,
+		"--metadata-json-file", metadataJsonPath,
 		"--invalid-hereafter", fmt.Sprintf("%d", invalidHereafter),
 		"--out-file", rawTxPath,
-	)).Run(); err != nil {
-		return nil, fmt.Errorf("cardano-cli rebuild tx: %v", err)
+	); err != nil {
+		return nil, fmt.Errorf("rebuild tx: %v", err)
 	}
 
 	// Sign the transaction
 	signedTxPath := filepath.Join(rootDir, "matx.signed")
-	if err := (exec.Command(
+	if _, err := Exec(
 		"cardano-cli", "transaction", "sign",
 		"--signing-key-file", paymentSigningKeyPath,
 		"--signing-key-file", policySigningKeyPath,
 		"--mainnet",
 		"--tx-body-file", rawTxPath,
 		"--out-file", signedTxPath,
-	)).Run(); err != nil {
-		return nil, fmt.Errorf("cardano-cli sign: %v", err)
+	); err != nil {
+		return nil, fmt.Errorf("sign: %v", err)
 	}
 
 	// Submit the transaction
-	if err := (exec.Command(
+	if _, err := Exec(
 		"cardano-cli", "transaction", "submit",
 		"--tx-file", signedTxPath,
-		"--mainnet",
-	)).Run(); err != nil {
-		return nil, fmt.Errorf("cardano-cli submit: %v", err)
+		"--testnet-magic", fmt.Sprintf("%d", CardanoTestNetMagic),
+	); err != nil {
+		return nil, fmt.Errorf("submit: %v", err)
 	}
 
 	// TODO: get minted asset ID
