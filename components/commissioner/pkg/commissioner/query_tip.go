@@ -19,7 +19,7 @@ type Tip struct {
 func queryTip() (*Tip, error) {
 	cmd := exec.Command(
 		"cardano-cli", "query", "tip",
-		"--testnet-magic", "1097911063",
+		"--testnet-magic", fmt.Sprintf("%d", CardanoTestNetMagic),
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

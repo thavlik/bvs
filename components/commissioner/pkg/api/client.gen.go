@@ -30,6 +30,45 @@ func NewCommissionerClient(endpoint, username, password string, timeout time.Dur
 	}
 }
 
+func (c *commissionerClient) CastVote(ctx context.Context, req CastVoteRequest) (*CastVoteResponse, error) {
+	body, err := json.Marshal(&req)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshal")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Commissioner.CastVote", c.endpoint),
+		bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.Wrap(err, "request")
+	}
+	if c.username != "" {
+		request.SetBasicAuth(c.username, c.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "body")
+	}
+	if resp.StatusCode != 200 {
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("%d: %s", resp.StatusCode, string(body))
+	}
+	response := &CastVoteResponse{}
+	if err := json.Unmarshal(body, response); err != nil {
+		return nil, errors.Wrap(err, "unmarshal")
+	}
+	return response, nil
+}
+
 func (c *commissionerClient) CreateElection(ctx context.Context, req CreateElectionRequest) (*CreateElectionResponse, error) {
 	body, err := json.Marshal(&req)
 	if err != nil {
@@ -180,6 +219,45 @@ func (c *commissionerClient) MintVote(ctx context.Context, req MintVoteRequest) 
 		return nil, fmt.Errorf("%d: %s", resp.StatusCode, string(body))
 	}
 	response := &MintVoteResponse{}
+	if err := json.Unmarshal(body, response); err != nil {
+		return nil, errors.Wrap(err, "unmarshal")
+	}
+	return response, nil
+}
+
+func (c *commissionerClient) QueryAddress(ctx context.Context, req QueryAddressRequest) (*QueryAddressResponse, error) {
+	body, err := json.Marshal(&req)
+	if err != nil {
+		return nil, errors.Wrap(err, "marshal")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Commissioner.QueryAddress", c.endpoint),
+		bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.Wrap(err, "request")
+	}
+	if c.username != "" {
+		request.SetBasicAuth(c.username, c.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "body")
+	}
+	if resp.StatusCode != 200 {
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("%d: %s", resp.StatusCode, string(body))
+	}
+	response := &QueryAddressResponse{}
 	if err := json.Unmarshal(body, response); err != nil {
 		return nil, errors.Wrap(err, "unmarshal")
 	}

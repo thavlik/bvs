@@ -18,7 +18,7 @@ func (s *Server) CreateVoter(
 	req api.CreateVoterRequest,
 ) (*api.CreateVoterResponse, error) {
 	id := uuid.New().String()
-	dir := filepath.Join("/tmp/voter/%s", id)
+	dir := filepath.Join("/tmp/%s", id)
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return nil, err
 	}

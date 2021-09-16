@@ -1,6 +1,3 @@
-#ARG KINDEST_REPOSITORY=""
-#ARG KINDEST_TAG="latest"
-#FROM ${KINDEST_REPOSITORY}thavlik/go-base:${KINDEST_TAG}
 FROM golang:1.16
 ENV GO111MODULE=on
 WORKDIR /go/src/github.com/thavlik/bvs

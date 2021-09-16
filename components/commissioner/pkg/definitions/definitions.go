@@ -5,6 +5,8 @@ type Commissioner interface {
 	CreateMinter(CreateMinterRequest) CreateMinterResponse
 	CreateVoter(CreateVoterRequest) CreateVoterResponse
 	MintVote(MintVoteRequest) MintVoteResponse
+	CastVote(CastVoteRequest) CastVoteResponse
+	QueryAddress(QueryAddressRequest) QueryAddressResponse
 }
 
 type CreateElectionRequest struct {
@@ -41,20 +43,39 @@ type CreateElectionResponse struct {
 	VerificationKey Key    `json:"verificationKey"` // contents of verification key file
 }
 
-type Auditor struct {
-	Agent     string `json:"agent"`     // Public address of the minting poll worker
-	Timestamp int64  `json:"timestamp"` // 64-bit nanosecond count since unix epoch
-	Proof     string `json:"proof"`     // Signature of the vote from the auditor's corresponding private key
-}
-
 type MintVoteRequest struct {
-	Election string  `json:"election"` // Corresponds to CreateElectionRequest.Name
-	Voter    string  `json:"voter"`    // Public address of the voter that will receive the NFT
-	Ident    string  `json:"ident"`    // Personally identifying fingerprint
-	Auditor  Auditor `json:"auditor"`  // Info about poll worker who did ID check
+	Election string `json:"election"` // Corresponds to CreateElectionResponse.ID
+	Voter    string `json:"voter"`    // Public address of the voter that will receive the NFT
+	Minter   string `json:"minter"`   // Minter UUID
 }
 
 type MintVoteResponse struct {
 	ID    string `json:"id"`    // Request UUID
 	Asset string `json:"asset"` // Address of the asset; Concatenation of the policy_id and hex-encoded asset_name; https://docs.blockfrost.io/#tag/Cardano-Assets/paths/~1assets~1{asset}/get
+}
+
+type CastVoteRequest struct {
+	Election   string `json:"election"`   // Corresponds to CreateElectionResponse.ID
+	Voter      string `json:"voter"`      // Input wallet address
+	SigningKey Key    `json:"signingKey"` // contents of signing key file for input wallet
+	Candidate  string `json:"candidate"`  // Candidate payment address
+}
+
+type CastVoteResponse struct {
+	ID string `json:"id"` // Request UUID
+}
+
+type QueryAddressRequest struct {
+	Address string `json:"address"`
+}
+
+type UnspentTransaction struct {
+	TxHash   string `json:"txHash"`
+	TxIx     int    `json:"txIx"`
+	Lovelace int    `json:"lovelace"`
+	Balance  string `json:"balance"`
+}
+
+type QueryAddressResponse struct {
+	UnspentTransactions []*UnspentTransaction `json:"unspentTransactions"`
 }

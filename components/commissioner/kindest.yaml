@@ -1,6 +1,6 @@
 dependencies:
   - ../cardano-base
-#  - ../go-base # TODO: add buildDependencies:?
+  - ../go-base
 build:
   name: thavlik/bvs-commissioner
   context: ../../

@@ -1,3 +1,4 @@
 build:
   name: thavlik/go-base
   context: ../../
+  skipPush: true # Don't push this dependency unless it is actually needed

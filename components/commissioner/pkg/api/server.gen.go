@@ -14,6 +14,15 @@ import (
 )
 
 var (
+	commissionerCastVoteTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_cast_vote_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.CastVote",
+	})
+	commissionerCastVoteSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_cast_vote_success_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.CastVote that does not return with an error",
+	})
+
 	commissionerCreateElectionTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "commissioner_create_election_total",
 		Help: "Auto-generated metric incremented on every call to Commissioner.CreateElection",
@@ -49,13 +58,24 @@ var (
 		Name: "commissioner_mint_vote_success_total",
 		Help: "Auto-generated metric incremented on every call to Commissioner.MintVote that does not return with an error",
 	})
+
+	commissionerQueryAddressTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_query_address_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.QueryAddress",
+	})
+	commissionerQueryAddressSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "commissioner_query_address_success_total",
+		Help: "Auto-generated metric incremented on every call to Commissioner.QueryAddress that does not return with an error",
+	})
 )
 
 type Commissioner interface {
+	CastVote(context.Context, CastVoteRequest) (*CastVoteResponse, error)
 	CreateElection(context.Context, CreateElectionRequest) (*CreateElectionResponse, error)
 	CreateMinter(context.Context, CreateMinterRequest) (*CreateMinterResponse, error)
 	CreateVoter(context.Context, CreateVoterRequest) (*CreateVoterResponse, error)
 	MintVote(context.Context, MintVoteRequest) (*MintVoteResponse, error)
+	QueryAddress(context.Context, QueryAddressRequest) (*QueryAddressResponse, error)
 }
 
 type commissionerServer struct {
@@ -68,10 +88,32 @@ func RegisterCommissioner(server *otohttp.Server, commissioner Commissioner) {
 		server:       server,
 		commissioner: commissioner,
 	}
+	server.Register("Commissioner", "CastVote", handler.handleCastVote)
 	server.Register("Commissioner", "CreateElection", handler.handleCreateElection)
 	server.Register("Commissioner", "CreateMinter", handler.handleCreateMinter)
 	server.Register("Commissioner", "CreateVoter", handler.handleCreateVoter)
 	server.Register("Commissioner", "MintVote", handler.handleMintVote)
+	server.Register("Commissioner", "QueryAddress", handler.handleQueryAddress)
+}
+
+func (s *commissionerServer) handleCastVote(w http.ResponseWriter, r *http.Request) {
+	commissionerCastVoteTotal.Inc()
+	var request CastVoteRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.commissioner.CastVote(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	commissionerCastVoteSuccessTotal.Inc()
 }
 
 func (s *commissionerServer) handleCreateElection(w http.ResponseWriter, r *http.Request) {
@@ -154,19 +196,45 @@ func (s *commissionerServer) handleMintVote(w http.ResponseWriter, r *http.Reque
 	commissionerMintVoteSuccessTotal.Inc()
 }
 
-type Auditor struct {
-	Agent     string `json:"agent"`
-	Timestamp int64  `json:"timestamp"`
-	Proof     string `json:"proof"`
-}
-
-type CreateElectionRequest struct {
+func (s *commissionerServer) handleQueryAddress(w http.ResponseWriter, r *http.Request) {
+	commissionerQueryAddressTotal.Inc()
+	var request QueryAddressRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.commissioner.QueryAddress(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	commissionerQueryAddressSuccessTotal.Inc()
 }
 
 type Key struct {
 	Type        string `json:"type"`
 	Description string `json:"description"`
 	CborHex     string `json:"cborHex"`
+}
+
+type CastVoteRequest struct {
+	Election   string `json:"election"`
+	Voter      string `json:"voter"`
+	SigningKey Key    `json:"signingKey"`
+	Candidate  string `json:"candidate"`
+}
+
+type CastVoteResponse struct {
+	ID    string `json:"id"`
+	Error string `json:"error,omitempty"`
+}
+
+type CreateElectionRequest struct {
 }
 
 type CreateElectionResponse struct {
@@ -198,14 +266,29 @@ type CreateVoterResponse struct {
 }
 
 type MintVoteRequest struct {
-	Election string  `json:"election"`
-	Voter    string  `json:"voter"`
-	Ident    string  `json:"ident"`
-	Auditor  Auditor `json:"auditor"`
+	Election string `json:"election"`
+	Voter    string `json:"voter"`
+	Minter   string `json:"minter"`
 }
 
 type MintVoteResponse struct {
 	ID    string `json:"id"`
 	Asset string `json:"asset"`
 	Error string `json:"error,omitempty"`
+}
+
+type QueryAddressRequest struct {
+	Address string `json:"address"`
+}
+
+type QueryAddressResponse struct {
+	UnspentTransactions []*UnspentTransaction `json:"unspentTransactions"`
+	Error               string                `json:"error,omitempty"`
+}
+
+type UnspentTransaction struct {
+	TxHash   string `json:"txHash"`
+	TxIx     int    `json:"txIx"`
+	Lovelace int    `json:"lovelace"`
+	Balance  string `json:"balance"`
 }
