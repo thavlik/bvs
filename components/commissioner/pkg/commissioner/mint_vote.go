@@ -142,8 +142,6 @@ func queryAddress(address string) (*addressInfo, error) {
 }
 
 func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.MintVoteResponse, error) {
-	// TODO: make sure minter has enough ADA and return specific error if not
-
 	// Look up the election (policy) signing key
 	election, err := s.storage.RetrieveElection(req.Election)
 	if err != nil {
@@ -204,14 +202,11 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	); err != nil {
 		return nil, err
 	}
-
-	// https://developers.cardano.org/docs/native-tokens/minting-nfts/
 	policyID := election.PolicyID
-	minterAddress := "addr_test1vqaqut4xyj7m6guettmcul9d2crt2vx6uxgjymr0n0ngelsa5vhhe"
+	minterAddress := minter.Address
 	voter := req.Voter
 	tokenName := "Vote"
 	tokenAmount := 1
-
 	mintingScript := election.MintingScript
 	invalidHereafter := election.InvalidHereafter
 	mintingScriptPath := filepath.Join(rootDir, "policy.script")
@@ -265,6 +260,10 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	fee, err := calculateFee(rawTxPath, protocolJsonPath)
 	if err != nil {
 		return nil, fmt.Errorf("calculateFee: %v", err)
+	}
+
+	if output < fee {
+		return nil, fmt.Errorf("minter has insufficient funds (has %d, needed >=%d)", output, fee)
 	}
 
 	// Subtract the fee from the output ADA balance
