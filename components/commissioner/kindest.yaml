@@ -1,5 +1,5 @@
 dependencies:
-  - ../cardano-base # no longer needed
+  - ../cardano-base
 #  - ../go-base
 build:
   name: thavlik/bvs-commissioner

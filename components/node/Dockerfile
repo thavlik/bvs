@@ -2,19 +2,12 @@ ARG KINDEST_REPOSITORY=""
 ARG KINDEST_TAG="latest"
 
 FROM ${KINDEST_REPOSITORY}thavlik/go-base:${KINDEST_TAG} AS builder
-WORKDIR /
-RUN go install github.com/sumup-oss/gocat@latest
 WORKDIR /go/src/github.com/thavlik/bvs
 COPY components/node components/node
 RUN cd components/node/cmd/node \
     && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build
 
 FROM ${KINDEST_REPOSITORY}thavlik/cardano-base:${KINDEST_TAG}
-RUN apt-get update \
-    && apt-get install -y netbase \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /go/bin/gocat /usr/local/bin
 COPY --from=builder /go/src/github.com/thavlik/bvs/components/node/cmd/node/node /usr/local/bin
 COPY components/node/configs /configs
 ENV CARDANO_CONFIG_PATH="/configs"

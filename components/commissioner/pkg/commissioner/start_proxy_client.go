@@ -9,9 +9,12 @@ import (
 func (s *Server) startProxyClient(addr string) error {
 	fmt.Printf("Starting TCP proxy client for %s\n", addr)
 	cmd := exec.Command(
-		"gocat", "tcp-to-unix",
-		"--src", addr,
-		"--dst", "/tmp/node.socket",
+		"bash",
+		"-c",
+		fmt.Sprintf(
+			"socat -t 100000 -v UNIX-LISTEN:/tmp/node.socket,unlink-early,mode=777,fork TCP:%s",
+			addr,
+		),
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -27,7 +30,7 @@ func (s *Server) startProxyClient(addr string) error {
 		stdoutDone <- func() error {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
-				fmt.Printf("[gocat.stdout] %s\n", scanner.Text())
+				fmt.Println(scanner.Text())
 			}
 			return fmt.Errorf("%v", scanner.Err())
 		}()
@@ -38,7 +41,7 @@ func (s *Server) startProxyClient(addr string) error {
 		stderrDone <- func() error {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
-				fmt.Printf("[gocat.stderr] %s\n", scanner.Text())
+				fmt.Println(scanner.Text())
 			}
 			return fmt.Errorf("%v", scanner.Err())
 		}()

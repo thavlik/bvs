@@ -29,6 +29,7 @@ func (s *Server) Start(
 	nodeHostAddr,
 	nodeTopology string,
 ) error {
+	start := time.Now()
 	databaseLoaded := make(chan int, 1)
 	startProxy := make(chan int, 1)
 	nodeDone := make(chan error, 1)
@@ -72,7 +73,7 @@ func (s *Server) Start(
 	go func() {
 		<-fullySynced
 		for {
-			timer := time.After(10 * time.Second)
+			timer := time.After(60 * time.Second)
 			select {
 			case <-timer:
 				tip, err := queryTip()
@@ -80,7 +81,7 @@ func (s *Server) Start(
 					fmt.Printf("queryTip error: %v\n", err)
 				} else {
 					if tip.SyncProgress == "100.00" {
-						fmt.Println("cardano-node is currently in sync with the network")
+						fmt.Printf("cardano-node is currently in sync with the network (uptime %s)\n", time.Since(start).Round(time.Second).String())
 					} else {
 						fmt.Printf("cardano-node is %s%% synchronized with the network\n", tip.SyncProgress)
 					}
@@ -97,8 +98,8 @@ func (s *Server) Start(
 	proxyDone := make(chan error, 1)
 	go func() {
 		<-startProxy
-		//proxyDone <- s.startProxyServer(proxyPort)
-		//close(proxyDone)
+		proxyDone <- s.startProxyServer(proxyPort)
+		close(proxyDone)
 	}()
 	select {
 	case err := <-proxyDone:
