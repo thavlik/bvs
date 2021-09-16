@@ -64,7 +64,7 @@ func (s *Server) CreateElection(
 		return nil, err
 	}
 	policyIDPath := filepath.Join(dir, "policyID")
-	if err := Exec(
+	if _, err := Exec(
 		"bash", "-c",
 		fmt.Sprintf(
 			"cardano-cli transaction policyid --script-file %s >> %s",
