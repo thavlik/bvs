@@ -97,8 +97,8 @@ func (s *Server) Start(
 	proxyDone := make(chan error, 1)
 	go func() {
 		<-startProxy
-		proxyDone <- s.startProxyServer(proxyPort)
-		close(proxyDone)
+		//proxyDone <- s.startProxyServer(proxyPort)
+		//close(proxyDone)
 	}()
 	select {
 	case err := <-proxyDone:

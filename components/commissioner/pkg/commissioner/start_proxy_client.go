@@ -1,4 +1,4 @@
-package node
+package commissioner
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 )
 
 func (s *Server) startProxyClient(addr string) error {
-	fmt.Printf("Starting TCP proxy on port %d\n", port)
+	fmt.Printf("Starting TCP proxy client for %s\n", addr)
 	cmd := exec.Command(
 		"gocat", "tcp-to-unix",
 		"--src", addr,

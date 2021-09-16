@@ -31,6 +31,11 @@ func (s *Server) Start(
 	port int,
 	metricsPort int,
 ) error {
+	proxyDone := make(chan error, 1)
+	go func() {
+		proxyDone <- s.startProxyClient("bvs-node:2100")
+		close(proxyDone)
+	}()
 	serverDone := make(chan error, 1)
 	go func() {
 		serverDone <- s.listen(port)
@@ -49,6 +54,8 @@ func (s *Server) Start(
 		}()
 	}
 	select {
+	case err := <-proxyDone:
+		return fmt.Errorf("proxy: %v", err)
 	case err := <-serverDone:
 		return fmt.Errorf("listen: %v", err)
 	case err := <-metricsDone:

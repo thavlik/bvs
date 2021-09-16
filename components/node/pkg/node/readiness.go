@@ -5,28 +5,34 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
 
 func waitForReady(databaseLoaded <-chan int) error {
+	start := time.Now()
 	stop := make(chan int, 1)
 	var l sync.Mutex
 	progress := "?"
 	message := "Waiting for cardano-node to load the blockchain data from local disk"
 	go func() {
-		start := time.Now()
 		for {
-			time.Sleep(10 * time.Second)
-			l.Lock()
-			m := message
-			p := progress
-			l.Unlock()
-			fmt.Printf(
-				"%s (%s%% complete, %s elapsed)\n",
-				m,
-				p,
-				time.Since(start).Round(time.Second).String())
+			timer := time.After(10 * time.Second)
+			select {
+			case <-stop:
+				return
+			case <-timer:
+				l.Lock()
+				m := message
+				p := progress
+				l.Unlock()
+				fmt.Printf(
+					"%s (%s%% complete, %s elapsed)\n",
+					m,
+					p,
+					time.Since(start).Round(time.Second).String())
+			}
 		}
 	}()
 	defer func() {
@@ -45,10 +51,11 @@ func waitForReady(databaseLoaded <-chan int) error {
 			l.Lock()
 			progress = tip.SyncProgress
 			l.Unlock()
-			if tip.SyncProgress == "100.00" {
+			if strings.HasPrefix(tip.SyncProgress, "100") {
 				if err := signalReady(); err != nil {
 					return err
 				}
+				fmt.Printf("Startup and synchronization took %v\n", time.Since(start).Round(time.Second).String())
 				return nil
 			}
 		}
