@@ -40,12 +40,15 @@ func generateMiningScript(
 	if err != nil {
 		return "", err
 	}
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("cardano-cli: %v", err)
+	if err := cmd.Start(); err != nil {
+		return "", err
 	}
 	body, err := ioutil.ReadAll(stdout)
 	if err != nil {
 		return "", err
+	}
+	if err := cmd.Wait(); err != nil {
+		return "", fmt.Errorf("cardano-cli: %v", err)
 	}
 	keyHash := strings.TrimSpace(string(body))
 	return fmt.Sprintf(
@@ -81,27 +84,34 @@ type addressInfo struct {
 }
 
 func queryAddress(address string) (*addressInfo, error) {
+	c := fmt.Sprintf(`cardano-cli query utxo --address %s --testnet-magic %d`, address, CardanoTestNetMagic)
+	fmt.Println(c)
 	cmd := exec.Command(
 		"bash",
 		"-c",
-		fmt.Sprintf(`cardano-cli query utxo --address %s --$testnet`, address),
+		c,
 	)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(stdout)
 	if err != nil {
 		return nil, err
 	}
+	if err := cmd.Wait(); err != nil {
+		return nil, fmt.Errorf("cardano-cli: %v", err)
+	}
+	fmt.Printf(string(body) + "\n")
 	lines := strings.Split(string(body), "\n")
-	if len(lines) < 2 {
+	if len(lines) < 3 {
 		return nil, errNoTransactions
 	}
-	parts := strings.Split(lines[1], " ")
+	fmt.Println(lines[2])
+	parts := strings.Split(lines[2], " ")
 	var filtered []string
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
@@ -218,7 +228,8 @@ func (s *Server) MintVote(ctx context.Context, req api.MintVoteRequest) (*api.Mi
 	}
 
 	// Get info about the minter's last transaction
-	addressInfo, err := queryAddress(req.Auditor.Agent)
+	// TODO: get payment address
+	addressInfo, err := queryAddress("")
 	if err != nil {
 		return nil, fmt.Errorf("queryAddress: %v", err)
 	}

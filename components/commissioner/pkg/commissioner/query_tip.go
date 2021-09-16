@@ -21,7 +21,6 @@ func queryTip() (*Tip, error) {
 		"cardano-cli", "query", "tip",
 		"--testnet-magic", "1097911063",
 	)
-	cmd.Env = append(cmd.Env, "CARDANO_NODE_SOCKET_PATH=/mnt/db/node.socket")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

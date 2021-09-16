@@ -3,7 +3,6 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -34,8 +33,7 @@ func TestElectionCreate(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(w.SigningKey), &req.SigningKey))
 	resp, err := com.CreateMinter(context.TODO(), req)
 	require.NoError(t, err)
-	fmt.Println(resp.ID)
-	asset, err := com.MintVote(context.TODO(), api.MintVoteRequest{
+	_, err = com.MintVote(context.TODO(), api.MintVoteRequest{
 		Election: name,
 		Voter:    "",
 		Ident:    "",
@@ -45,5 +43,4 @@ func TestElectionCreate(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	fmt.Println(asset.ID)
 }

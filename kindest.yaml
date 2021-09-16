@@ -6,8 +6,8 @@ env:
     resources:
       - test/fixtures/
       - test/fixtures/secrets
-      - kube-prometheus/manifests/setup/
-      - kube-prometheus/manifests/
+      #- kube-prometheus/manifests/setup/
+      #- kube-prometheus/manifests/
     charts:
       bvs:
         name: chart/
