@@ -1,4 +1,8 @@
 Main Menu
+|-> Stats dashboard
+| |-> Leaderboard
+| |-> Votes/time graphs
+| |-> Robust query & visualization tools
 |-> Voting Machine Mode
 | |-> Start screen ("Please scan QR code to input your voter information")
 |   |-> Information Prompts
