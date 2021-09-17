@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-gateway
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-gateway
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-gateway
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: gateway
+        imagePullPolicy: {{ .Values.gateway.imagePullPolicy }}
+        image: {{ .Values.gateway.image }}
+        command:
+        - gateway
+        - server
+      {{- if .Values.gateway.metrics }}
+        - --metrics-port
+        - "9091"
+      {{- end }}
+        resources:
+{{ toYaml .Values.gateway.resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.gateway.metrics }}
+        - containerPort: 9091
+          name: metrics
+      {{- end }}
+        env: []

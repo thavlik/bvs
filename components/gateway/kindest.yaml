@@ -1,0 +1,5 @@
+dependencies:
+  - ../go-base
+build:
+  name: thavlik/bvs-gateway
+  context: ../../

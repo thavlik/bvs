@@ -1,41 +1,23 @@
-package commissioner
+package gateway
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/thavlik/bvs/components/commissioner/pkg/storage"
 )
 
-var CardanoTestNetMagic = 1097911063
-
-// cardano-cli query tip --testnet-magic 1097911063
-
 type Server struct {
-	tokenName string
-	storage   storage.Storage
 }
 
-func NewServer(
-	tokenName string,
-	storage storage.Storage,
-) *Server {
-	return &Server{
-		tokenName,
-		storage,
-	}
+func NewServer() *Server {
+	return &Server{}
 }
 
 func (s *Server) Start(
 	port int,
 	metricsPort int,
 ) error {
-	proxyDone := make(chan error, 1)
-	go func() {
-		proxyDone <- s.startProxyClient("bvs-node:2100")
-		close(proxyDone)
-	}()
 	serverDone := make(chan error, 1)
 	go func() {
 		fmt.Printf("Listening on %d\n", port)
@@ -55,8 +37,6 @@ func (s *Server) Start(
 		}()
 	}
 	select {
-	case err := <-proxyDone:
-		return fmt.Errorf("proxy: %v", err)
 	case err := <-serverDone:
 		return fmt.Errorf("listen: %v", err)
 	case err := <-metricsDone:

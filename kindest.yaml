@@ -1,6 +1,7 @@
 dependencies:
   - components/commissioner
   - components/node
+  - components/gateway
 env:
   kubernetes:
     resources:

@@ -1,0 +1,14 @@
+{{- if .Values.gateway.metrics }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-gateway
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-gateway
+  podMetricsEndpoints:
+  - port: metrics
+{{- end }}

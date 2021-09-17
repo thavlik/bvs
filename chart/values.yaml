@@ -37,3 +37,12 @@ node:
     password: {}
     cacert: {}
 
+gateway:
+  image: thavlik/bvs-gateway:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 100m
+  metrics: true
