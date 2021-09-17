@@ -53,7 +53,7 @@ func TestSingleVote(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestMultipleVotes(t *testing.T) {
+func TestSerialVotes(t *testing.T) {
 	com := CreateTestCommissioner(t)
 	election, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{})
 	require.NoError(t, err)
