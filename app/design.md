@@ -32,7 +32,6 @@ Main Menu
     | |-> Search for minter by payment address
     | |-> Create Minter
     | | |-> Enter personal information (?)
-    | | |-> Assign election access
     | | |-> Summary
     | | |-> Confirmation
     | |-> Enumerate Minters
@@ -42,13 +41,23 @@ Main Menu
       |-> Search for anything by policyID, assetID, address of voter, or address of candidate 
 
 HTTP API:
-/elections/get
-/elections/list
 
-/elections/delete
-/minter/get
-/minter/list
+POST /search
 
-/minter/delete
-/vote/get
-/vote/void
+GET /elections/get
+GET /elections/list
+POST /elections/create
+POST /elections/delete
+GET /election/candidates
+PUT /election/candidates
+
+GET /minter/get
+GET /minter/list
+POST /minter/create
+POST /minter/delete
+
+GET /vote/list
+GET /vote/get
+POST /vote/void
+POST /vote/mint
+POST /vote/cast
