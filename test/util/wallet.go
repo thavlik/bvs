@@ -15,7 +15,7 @@ type Wallet struct {
 	Address         string
 }
 
-func GetWallet(t *testing.T) *Wallet {
+func GetTestWallet(t *testing.T) *Wallet {
 	cl := CreateClient(t)
 	secret := &corev1.Secret{}
 	require.NoError(t, cl.Get(context.TODO(), types.NamespacedName{

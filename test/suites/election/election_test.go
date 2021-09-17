@@ -24,7 +24,7 @@ func TestSingleVote(t *testing.T) {
 	com := CreateTestCommissioner(t)
 	election, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{})
 	require.NoError(t, err)
-	w := util.GetWallet(t)
+	w := util.GetTestWallet(t)
 	req := api.CreateMinterRequest{Address: w.Address}
 	require.NoError(t, json.Unmarshal([]byte(w.VerificationKey), &req.VerificationKey))
 	require.NoError(t, json.Unmarshal([]byte(w.SigningKey), &req.SigningKey))
@@ -57,7 +57,7 @@ func TestSerialVotes(t *testing.T) {
 	com := CreateTestCommissioner(t)
 	election, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{})
 	require.NoError(t, err)
-	w := util.GetWallet(t)
+	w := util.GetTestWallet(t)
 	req := api.CreateMinterRequest{Address: w.Address}
 	require.NoError(t, json.Unmarshal([]byte(w.VerificationKey), &req.VerificationKey))
 	require.NoError(t, json.Unmarshal([]byte(w.SigningKey), &req.SigningKey))
@@ -95,7 +95,7 @@ func TestParallelVotes(t *testing.T) {
 	com := CreateTestCommissioner(t)
 	election, err := com.CreateElection(context.TODO(), api.CreateElectionRequest{})
 	require.NoError(t, err)
-	w := util.GetWallet(t)
+	w := util.GetTestWallet(t)
 	req := api.CreateMinterRequest{Address: w.Address}
 	require.NoError(t, json.Unmarshal([]byte(w.VerificationKey), &req.VerificationKey))
 	require.NoError(t, json.Unmarshal([]byte(w.SigningKey), &req.SigningKey))
