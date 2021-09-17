@@ -69,7 +69,7 @@ func queryAddress(address string) ([]*addressInfo, error) {
 		}
 		var balance string
 		for _, item := range filtered[2:] {
-			if len(balance) > 0 {
+			if balance != "" {
 				balance += " "
 			}
 			balance += item
@@ -86,7 +86,10 @@ func queryAddress(address string) ([]*addressInfo, error) {
 
 func (s *Server) QueryAddress(ctx context.Context, req api.QueryAddressRequest) (*api.QueryAddressResponse, error) {
 	utxos, err := queryAddress(req.Address)
-	if err != nil {
+	if err == errNoTransactions {
+		// Return empty response so we don't pollute the error log
+		return &api.QueryAddressResponse{}, nil
+	} else if err != nil {
 		return nil, err
 	}
 	var result []*api.UnspentTransaction

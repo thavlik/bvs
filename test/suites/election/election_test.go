@@ -40,7 +40,7 @@ func TestSingleVote(t *testing.T) {
 		Minter:   minter.ID,
 	})
 	require.NoError(t, err)
-	_, err = util.WaitForBalance(com, voter.Address)
+	_, err = util.WaitForUTXO(com, voter.Address)
 	require.NoError(t, err)
 	_, err = com.CastVote(context.TODO(), api.CastVoteRequest{
 		Election:   election.ID,
@@ -49,7 +49,7 @@ func TestSingleVote(t *testing.T) {
 		Candidate:  candidate.Address,
 	})
 	require.NoError(t, err)
-	_, err = util.WaitForBalance(com, candidate.Address)
+	_, err = util.WaitForUTXO(com, candidate.Address)
 	require.NoError(t, err)
 }
 
@@ -75,7 +75,7 @@ func TestMultipleVotes(t *testing.T) {
 			Minter:   minter.ID,
 		})
 		require.NoError(t, err)
-		oldUtxos, err := util.WaitForBalance(com, voter.Address)
+		oldUtxos, err := util.WaitForUTXO(com, voter.Address)
 		require.NoError(t, err)
 		_, err = com.CastVote(context.TODO(), api.CastVoteRequest{
 			Election:   election.ID,
@@ -84,7 +84,7 @@ func TestMultipleVotes(t *testing.T) {
 			Candidate:  candidate.Address,
 		})
 		require.NoError(t, err)
-		require.NoError(t, util.WaitForBalanceChange(com, oldUtxos, voter.Address))
+		require.NoError(t, util.WaitForUTXOChange(com, oldUtxos, voter.Address))
 	}
 	numVotes, err := util.CountVotes(com, candidate.Address, election.PolicyID)
 	require.NoError(t, err)
@@ -114,7 +114,7 @@ func TestParallelVotes(t *testing.T) {
 			Minter:   minter.ID,
 		})
 		require.NoError(t, err)
-		oldUtxos, err := util.WaitForBalance(com, voter.Address)
+		oldUtxos, err := util.WaitForUTXO(com, voter.Address)
 		require.NoError(t, err)
 		done := make(chan error, 1)
 		dones[i] = done
@@ -129,7 +129,7 @@ func TestParallelVotes(t *testing.T) {
 				}); err != nil {
 					return err
 				}
-				if err := util.WaitForBalanceChange(com, oldUtxos, voter.Address); err != nil {
+				if err := util.WaitForUTXOChange(com, oldUtxos, voter.Address); err != nil {
 					return err
 				}
 				return nil

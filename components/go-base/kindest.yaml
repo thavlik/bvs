@@ -1,4 +1,7 @@
 build:
   name: thavlik/go-base
   context: ../../
-  skipPush: true # Don't push this dependency unless it is actually needed
+
+  # Because this is only a build dependency, we don't
+  # have to push it. Skipping saves a >700MiB upload.
+  skipPush: true
