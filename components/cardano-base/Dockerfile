@@ -1,3 +1,4 @@
+ARG BASE_IMAGE="debian:11-slim"
 FROM debian:11-slim as builder
 RUN apt-get update \
     && apt-get install -y \
@@ -9,7 +10,7 @@ WORKDIR /usr/local/cardano
 RUN wget https://hydra.iohk.io/build/7639935/download/1/cardano-node-1.29.0-linux.tar.gz \
     && tar -xzf cardano-node-1.29.0-linux.tar.gz \
     && rm cardano-node-1.29.0-linux.tar.gz
-FROM debian:11-slim
+FROM ${BASE_IMAGE}
 RUN apt-get update \
     && apt-get install -y \
         netbase \
