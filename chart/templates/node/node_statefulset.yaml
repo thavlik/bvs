@@ -14,20 +14,60 @@ spec:
       labels:
         app: {{ .Release.Name }}-node
     spec:
-    {{- if .Values.node.pvc }}
+    {{- if or .Values.postgres.pvc .Values.node.pvc }}
       volumes:
-      - name: data
+    {{- if .Values.postgres.pvc }}
+      - name: postgresdata
+        persistentVolumeClaim:
+          claimName: {{ .Values.postgres.pvc }}
+    {{- end }}
+    {{- if .Values.node.pvc }}
+      - name: nodedata
         persistentVolumeClaim:
           claimName: {{ .Values.node.pvc }}
+    {{- end }}
     {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 10 }}
     {{- end }}
       containers:
+      - name: postgres
+        imagePullPolicy: {{ .Values.postgres.imagePullPolicy }}
+        image: {{ .Values.postgres.image }}
+        command:
+        - postgres
+        - -D
+        - /mnt/db
+        - -p
+        - "4550"
+        resources:
+{{ toYaml .Values.postgres.resources | indent 12 }}
+        ports:
+        - containerPort: 4550
+          name: postgres
+    {{- if .Values.postgres.pvc }}
+        volumeMounts:
+        - name: postgresdata
+          mountPath: /mnt
+    {{- end }}
+      - name: dbsync
+        imagePullPolicy: {{ .Values.dbSync.imagePullPolicy }}
+        image: {{ .Values.dbSync.image }}
+        command:
+        - /bin/db-sync
+        - --node-addr
+        - localhost:2100
+        resources:
+{{ toYaml .Values.dbSync.resources | indent 12 }}
       - name: node
         imagePullPolicy: {{ .Values.node.imagePullPolicy }}
         image: {{ .Values.node.image }}
+    {{- if .Values.postgres.pvc }}
+        volumeMounts:
+        - name: nodedata
+          mountPath: /mnt
+    {{- end }}
         readinessProbe:
           exec:
             command:
@@ -55,11 +95,6 @@ spec:
         - --metrics-port
         - "9091"
       {{- end }}
-      {{- if .Values.node.pvc }}
-        volumeMounts:
-        - name: data
-          mountPath: /mnt
-      {{- end }}
         resources:
 {{ toYaml .Values.node.resources | indent 12 }}
         ports:
@@ -71,4 +106,3 @@ spec:
         - containerPort: 9091
           name: metrics
       {{- end }}
-        env: []

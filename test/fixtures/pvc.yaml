@@ -10,3 +10,16 @@ spec:
   resources:
     requests:
       storage: 50G
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-db
+  namespace: bvs
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100G

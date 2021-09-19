@@ -2,6 +2,7 @@ dependencies:
   - components/commissioner
   - components/node
   - components/gateway
+  - components/db-sync
 env:
   kubernetes:
     resources:
@@ -17,6 +18,8 @@ env:
         values:
           node:
             pvc: cardano-db
+          postgres:
+            pvc: postgres-db
           commissioner:
             mongoDB:
               host: bvs-db-b7d57032.mongo.ondigitalocean.com

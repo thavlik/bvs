@@ -15,6 +15,7 @@ func (s *Server) startProxyServer(port int) error {
 			port,
 		),
 	)
+	// This command works so reliably that I've taken out logging completely
 	if err := cmd.Run(); err != nil {
 		return err
 	}

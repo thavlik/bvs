@@ -1,0 +1,6 @@
+dependencies:
+  - ../go-base
+build:
+  name: thavlik/bvs-db-sync
+  context: ../../
+

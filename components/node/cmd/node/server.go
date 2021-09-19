@@ -16,6 +16,8 @@ type ServerArgs struct {
 	NodeSocketPath   string
 	NodeHostAddr     string
 	NodeTopology     string
+	DBSyncPath       string
+	PostgresPort     int
 }
 
 var serverArgs ServerArgs
@@ -50,6 +52,8 @@ var serverCmd = &cobra.Command{
 			serverArgs.NodeSocketPath,
 			serverArgs.NodeHostAddr,
 			serverArgs.NodeTopology,
+			serverArgs.DBSyncPath,
+			serverArgs.PostgresPort,
 		)
 	},
 }
@@ -63,5 +67,7 @@ func init() {
 	serverCmd.PersistentFlags().StringVar(&serverArgs.NodeSocketPath, "node-socket-path", "", "cardano-node socket path")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.NodeHostAddr, "node-host-addr", "", "cardano-node host address")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.NodeTopology, "node-topology", "", "cardano-node topology file path")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.DBSyncPath, "db-sync-path", "", "if set, enables cardano-db-sync with local postgres database saved to the given path")
+	serverCmd.PersistentFlags().IntVar(&serverArgs.PostgresPort, "postgres-port", 4550, "if cardano-sync-db is enabled, this is the port postgres will listen on")
 	ConfigureCommand(serverCmd)
 }

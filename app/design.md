@@ -1,4 +1,25 @@
-Main Menu
+Public blockchain explorer-type website
+|-> Home page (layout like https://www.flexpool.io/)
+| |-> Big search bar
+| |-> Statistics, graphs, leaderboards, etc.
+|-> Search
+|-> Votes
+| |-> List votes
+| |-> View vote
+|   |-> Link to election
+|   |-> Link to voter
+|   |-> Link to minter
+|   |-> Link to asset search on external cardano blockchain
+|-> Elections
+| |-> List elections
+| |-> View election
+|   |-> Graphs and stats specific to election 
+|   |-> Link to vote search on external cardano blockchain
+|-> Minters
+| |-> List minters
+| |-> View minter
+|   |-> Link to search on external cardano blockchain
+Voting/admin app
 |-> Stats dashboard
 | |-> Leaderboard
 | |-> Votes/time graphs
