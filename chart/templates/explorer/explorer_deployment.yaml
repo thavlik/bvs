@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-explorer
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-explorer
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-explorer
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: explorer
+        imagePullPolicy: {{ .Values.explorer.imagePullPolicy }}
+        image: {{ .Values.explorer.image }}
+        resources:
+{{ toYaml .Values.explorer.resources | indent 12 }}
+        ports:
+        - containerPort: 80
+          name: http
+        env: []

@@ -49,6 +49,16 @@ dbSync:
       cpu: 50m
   metrics: true
 
+explorer:
+  image: thavlik/bvs-explorer:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    limits:
+      memory: 64Mi
+      cpu: 50m
+  metrics: true
+
 postgres:
   image: postgres:latest
   imagePullPolicy: Always
