@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import "./../../../assets/scss/BigSearchBar.scss";
+import "./BigSearchBar.scss";
 
 export class BigSearchBar extends React.Component<Record<string, unknown>, undefined> {
   public render() {

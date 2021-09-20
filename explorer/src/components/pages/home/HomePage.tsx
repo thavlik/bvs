@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { BigSearchBar } from "./BigSearchBar";
 
-import "./../../../assets/scss/HomePage.scss";
+import "./HomePage.scss";
 
 export class HomePage extends React.Component<Record<string, unknown>, undefined> {
   public render() {

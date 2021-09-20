@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TopSearchBar } from "./TopSearchBar";
-import "./../assets/scss/Banner.scss";
+import "./Banner.scss";
 
 export class Banner extends React.Component<Record<string, unknown>, undefined> {
   public render() {

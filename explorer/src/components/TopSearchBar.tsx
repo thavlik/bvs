@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import "./../assets/scss/TopSearchBar.scss";
+import "./TopSearchBar.scss";
 
 export class TopSearchBar extends React.Component<Record<string, unknown>, undefined> {
   public render() {
