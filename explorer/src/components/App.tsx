@@ -7,8 +7,35 @@ class App extends React.Component<Record<string, unknown>, undefined> {
   public render() {
     return (
       <div className="app">
-        <h1>Search Results</h1>
-        <p>TODO: mock up search results</p>
+        <div className="banner">
+          <div className="banner-content">
+            Blockchain Voting Systems
+            <div className="nav">
+              <div className="nav-item"><a href="#">Elections</a></div>
+              <div className="nav-item"><a href="#">Minters</a></div>
+              <div className="nav-item"><a href="#">Votes</a></div>
+            </div>
+            <div className="search">
+              <input type="text" />
+              <div className="submit-search"></div>
+            </div>
+            <div className="nav">
+              <div className="nav-item"><a href="#">FAQ</a></div>
+              <div className="nav-item"><a href="#">Support</a></div>
+            </div>
+          </div>
+        </div>
+        <div className="content">
+          <h1>The future of election security is here.</h1>
+          <div className="main-search">
+            <input type="text" value="Search for vote, election, minter..." />
+            <div className="submit-search"></div>
+          </div>
+          TODO: show links, stats, and graphs for any ongoing elections
+        </div>
+        <div className="copyinfo">
+          © 2021 Thomas Havlik. All rights reserved. <a href="https://github.com/thavlik/bvs">Open Source</a>
+        </div>
       </div>
     );
   }
