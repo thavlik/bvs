@@ -1,5 +1,5 @@
 $page-width: 1100px;
-$nav-height: 32px;
+$nav-height: 30px;
 
 .banner {
     margin: 0;
@@ -18,10 +18,10 @@ $nav-height: 32px;
                 height: $nav-height;
                 text-align: center;
                 a {
-                font-weight: bold;
-                padding: 0 10px;
-                display: inline-block;
-                height: $nav-height;
+                    font-weight: bold;
+                    padding: 0 10px;
+                    display: inline-block;
+                    height: $nav-height;
                 }
             }
         }

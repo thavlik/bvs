@@ -1,5 +1,12 @@
 .search {
     display: inline-block;
+    input {
+        border-radius: 4px;
+        padding: 8px;
+        border: none;
+        outline: none;
+        font-size: 1.1em;
+    }
     .submit-search {
         display: inline-block;
         width: 32px;
