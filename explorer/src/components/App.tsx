@@ -1,6 +1,6 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
-
+import { TopSearchBar } from "./TopSearchBar";
 import "./../assets/scss/App.scss";
 
 class App extends React.Component<Record<string, unknown>, undefined> {
@@ -15,10 +15,7 @@ class App extends React.Component<Record<string, unknown>, undefined> {
               <div className="nav-item"><a href="#">Minters</a></div>
               <div className="nav-item"><a href="#">Votes</a></div>
             </div>
-            <div className="search">
-              <input type="text" />
-              <div className="submit-search"></div>
-            </div>
+            <TopSearchBar />
             <div className="nav">
               <div className="nav-item"><a href="#">FAQ</a></div>
               <div className="nav-item"><a href="#">Support</a></div>
