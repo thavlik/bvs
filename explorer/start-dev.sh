@@ -11,7 +11,7 @@ docker run --rm -d \
     -p $PORT:$PORT \
     $IMAGE \
     bash -c cd /mnt \
-        && npm i \
-        && npm run start-dev
+        && /usr/local/bin/npm i \
+        && /usr/local/bin/npm run start-dev
 echo "Development server is hosted at http://localhost:$PORT"
 docker logs -f $NAME
