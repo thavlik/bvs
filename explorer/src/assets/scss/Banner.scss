@@ -1,0 +1,29 @@
+$page-width: 1100px;
+$nav-height: 32px;
+
+.banner {
+    margin: 0;
+    padding: 16px;
+    width: 100%;
+    background: green;
+    text-align: center;
+    .banner-content {
+        margin: 0 auto;
+        width: $page-width;
+        .nav {
+            display: inline-block;
+            .nav-item {
+                display: inline-block;
+                position: relative;
+                height: $nav-height;
+                text-align: center;
+                a {
+                font-weight: bold;
+                padding: 0 10px;
+                display: inline-block;
+                height: $nav-height;
+                }
+            }
+        }
+    }
+}

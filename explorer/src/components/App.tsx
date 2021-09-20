@@ -1,27 +1,13 @@
 import * as React from "react";
 import { hot } from "react-hot-loader";
-import { TopSearchBar } from "./TopSearchBar";
+import { Banner } from "./Banner";
 import "./../assets/scss/App.scss";
 
 class App extends React.Component<Record<string, unknown>, undefined> {
   public render() {
     return (
       <div className="app">
-        <div className="banner">
-          <div className="banner-content">
-            Blockchain Voting Systems
-            <div className="nav">
-              <div className="nav-item"><a href="#">Elections</a></div>
-              <div className="nav-item"><a href="#">Minters</a></div>
-              <div className="nav-item"><a href="#">Votes</a></div>
-            </div>
-            <TopSearchBar />
-            <div className="nav">
-              <div className="nav-item"><a href="#">FAQ</a></div>
-              <div className="nav-item"><a href="#">Support</a></div>
-            </div>
-          </div>
-        </div>
+        <Banner />
         <div className="content">
           <h1>The future of election security is here.</h1>
           <div className="main-search">

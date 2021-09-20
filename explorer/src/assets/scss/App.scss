@@ -1,6 +1,5 @@
 $bg-color: hsl(0, 0%, 7%);
 $border-color: red;
-$nav-height: 32px;
 $page-width: 1100px;
 
 .app {
@@ -11,32 +10,7 @@ $page-width: 1100px;
   h1, p {
     margin: 0 !important;
   }
-  .banner {
-    margin: 0;
-    padding: 16px;
-    width: 100%;
-    background: green;
-    text-align: center;
-    .banner-content {
-      margin: 0 auto;
-      width: $page-width;
-      .nav {
-        display: inline-block;
-        .nav-item {
-          display: inline-block;
-          position: relative;
-          height: $nav-height;
-          text-align: center;
-          a {
-            font-weight: bold;
-            padding: 0 10px;
-            display: inline-block;
-            height: $nav-height;
-          }
-        }
-      }
-    }
-  }
+  
   .content {
     width: $page-width;
     margin: 0 auto;
