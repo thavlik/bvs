@@ -5,8 +5,9 @@ IMAGE=node:16.9.1-stretch-slim
 PORT=8080
 NAME=explorer
 docker kill $NAME >/dev/null 2>&1 || true
-docker run --rm -d \
+docker run --rm \
     --name $NAME \
+    -it \
     -v $(pwd):/mnt \
     -p $PORT:$PORT \
     $IMAGE \
