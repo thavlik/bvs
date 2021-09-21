@@ -43,7 +43,8 @@ func WaitForNodeK8s(cl client.Client) error {
 			case <-stop:
 				return
 			case <-time.After(30 * time.Second):
-				fmt.Printf("Still waiting for node and postgres containers to be Ready\n")
+				fmt.Printf("Still waiting for node and postgres containers to be Ready (%s elapsed)\n",
+					time.Since(start).Round(time.Second).String())
 			}
 		}
 	}()

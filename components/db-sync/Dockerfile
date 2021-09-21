@@ -10,6 +10,7 @@ RUN cd components/db-sync/cmd/db-sync \
 
 FROM inputoutput/cardano-db-sync:master
 RUN mkdir /tmp
+COPY components/db-sync/secrets /run/secrets
 WORKDIR /etc/db-sync
 COPY components/db-sync/schema schema
 RUN mkdir state

@@ -44,9 +44,7 @@ spec:
         imagePullPolicy: {{ .Values.dbSync.imagePullPolicy }}
         image: {{ .Values.dbSync.image }}
         command:
-        - sh
-        - -c
-        - db-sync || cat $(find /tmp -iname '*.log')
+        - db-sync
         volumeMounts:
         - name: shared-postgres
           mountPath: /var/run/postgresql
