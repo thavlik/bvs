@@ -38,10 +38,6 @@ func (s *Server) Start(
 	databaseLoaded := make(chan int, 1)
 	startProxy := make(chan int, 1)
 	nodeDone := make(chan error, 1)
-	dbSyncDone := make(chan error, 1)
-	if dbSyncPath == "" {
-		defer close(dbSyncDone)
-	}
 	go func() {
 		fmt.Println("API server listening on port 80")
 		apiServerDone <- s.startAPIServer(80)
@@ -87,12 +83,6 @@ func (s *Server) Start(
 	go func() {
 		<-fullySynced
 		atomic.StoreInt32(&s.isReady, 1)
-		if dbSyncPath != "" {
-			go func() {
-				dbSyncDone <- s.startDBSync()
-				close(dbSyncDone)
-			}()
-		}
 		for {
 			timer := time.After(60 * time.Second)
 			select {
@@ -102,7 +92,7 @@ func (s *Server) Start(
 					fmt.Printf("queryTip error: %v\n", err)
 				} else {
 					if tip.SyncProgress == "100.00" {
-						fmt.Printf("cardano-node is currently in sync with the network (uptime %s)\n", time.Since(start).Round(time.Second).String())
+						fmt.Printf("cardano-node is currently in sync with the network\n")
 					} else {
 						fmt.Printf("cardano-node is %s%% synchronized with the network\n", tip.SyncProgress)
 					}
@@ -123,12 +113,8 @@ func (s *Server) Start(
 		close(proxyDone)
 	}()
 	select {
-	case err := <-apiServerDone:
-		return fmt.Errorf("api server: %v", err)
 	case err := <-proxyDone:
 		return fmt.Errorf("proxy: %v", err)
-	//case err := <-dbSyncDone:
-	//	return fmt.Errorf("db-sync: %v", err)
 	case err := <-nodeDone:
 		return fmt.Errorf("node: %v", err)
 	case err := <-metricsDone:
