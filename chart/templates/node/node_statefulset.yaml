@@ -75,7 +75,7 @@ spec:
           name: postgres
         env:
         - name: POSTGRES_PASSWORD
-          value: password
+          value: foo
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         volumeMounts:
