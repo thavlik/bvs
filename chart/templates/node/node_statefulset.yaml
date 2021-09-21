@@ -29,7 +29,30 @@ spec:
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 10 }}
     {{- end }}
+      serviceAccountName: {{ .Release.Name }}-node
       containers:
+      - name: dbsync
+        imagePullPolicy: {{ .Values.dbSync.imagePullPolicy }}
+        image: {{ .Values.dbSync.image }}
+        command:
+        - sh
+        - -c
+        - db-sync && cd /tmp && cat $(ls | grep .log)
+        env:
+        - name: POSTGRES_HOST
+          value: {{ .Release.Name }}-node
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+{{ toYaml .Values.dbSync.resources | indent 12 }}
       - name: postgres
         imagePullPolicy: {{ .Values.postgres.imagePullPolicy }}
         image: {{ .Values.postgres.image }}
@@ -89,6 +112,8 @@ spec:
         resources:
 {{ toYaml .Values.node.resources | indent 12 }}
         ports:
+        - containerPort: 80
+          name: http
         - containerPort: 1337
           name: node
         - containerPort: 2100

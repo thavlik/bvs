@@ -15,7 +15,7 @@ func waitForReady(databaseLoaded <-chan int) error {
 	stop := make(chan int, 1)
 	var l sync.Mutex
 	progress := "?"
-	message := "Waiting for cardano-node to load the blockchain data from local disk"
+	message := "Waiting for cardano-node to load the blockchain data from local disk. This usually takes 3-4 minutes."
 	go func() {
 		for {
 			timer := time.After(10 * time.Second)

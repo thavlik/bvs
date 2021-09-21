@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -13,6 +14,7 @@ var CardanoTestNetMagic = 1097911063
 // cardano-cli query tip --testnet-magic 1097911063
 
 type Server struct {
+	isReady int32
 }
 
 func NewServer() *Server {
@@ -32,6 +34,7 @@ func (s *Server) Start(
 	postgresPort int,
 ) error {
 	start := time.Now()
+	apiServerDone := make(chan error, 1)
 	databaseLoaded := make(chan int, 1)
 	startProxy := make(chan int, 1)
 	nodeDone := make(chan error, 1)
@@ -39,6 +42,11 @@ func (s *Server) Start(
 	if dbSyncPath == "" {
 		defer close(dbSyncDone)
 	}
+	go func() {
+		fmt.Println("API server listening on port 80")
+		apiServerDone <- s.startAPIServer(80)
+		close(apiServerDone)
+	}()
 	go func() {
 		nodeDone <- s.startNode(
 			nodePort,
@@ -63,7 +71,7 @@ func (s *Server) Start(
 			close(metricsDone)
 		}()
 	}
-	fmt.Println("Waiting for cardano-node to fully synchronize...")
+	fmt.Println("Waiting for cardano-node to fully synchronize")
 	fullySynced := make(chan error, 1)
 	go func() {
 		if err := waitForReady(databaseLoaded); err != nil {
@@ -78,6 +86,7 @@ func (s *Server) Start(
 	stop := make(chan int, 1)
 	go func() {
 		<-fullySynced
+		atomic.StoreInt32(&s.isReady, 1)
 		if dbSyncPath != "" {
 			go func() {
 				dbSyncDone <- s.startDBSync()
@@ -114,6 +123,8 @@ func (s *Server) Start(
 		close(proxyDone)
 	}()
 	select {
+	case err := <-apiServerDone:
+		return fmt.Errorf("api server: %v", err)
 	case err := <-proxyDone:
 		return fmt.Errorf("proxy: %v", err)
 	//case err := <-dbSyncDone:

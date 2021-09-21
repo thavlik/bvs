@@ -1,18 +1,17 @@
 # Explorer DB Node configuration
 
-NetworkName: mainnet
+NetworkName: testnet
 
 EnableLogMetrics: False
 EnableLogging: True
 
-# The default port is 8080
-# PrometheusPort: 8080
+Protocol: Cardano
 
 # The config file for the node we are connecting to. If this is not the correct
 # config, it will likely lead to db-sync throwing up weird error messages from
 # the consensus layer.
 # The path to the node config file is relative to this config file.
-NodeConfigFile: /configs/mainnet-config.json
+NodeConfigFile: /configs/testnet-config.json
 
 # ------------------------------------------------------------------------------
 # Logging configuration follows.

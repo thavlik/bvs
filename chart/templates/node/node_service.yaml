@@ -15,3 +15,6 @@ spec:
     port: 1337
   - name: postgres
     port: 5432
+  - name: http
+    port: 80
+

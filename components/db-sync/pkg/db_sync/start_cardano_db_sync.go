@@ -10,8 +10,8 @@ func StartCardanoDBSync() error {
 	cmd := exec.Command(
 		"cardano-db-sync",
 		"--socket-path", socketPath,
-		"--config", "/configs/db-sync/mainnet-config.yaml",
-		"--state-dir", "/etc/db-sync/state",
+		"--config", "/etc/db-sync/configs/testnet-config.yaml",
+		"--state-dir", "/etc/db-sync/state/testnet",
 		"--schema-dir", "/etc/db-sync/schema",
 	)
 	stdout, err := cmd.StdoutPipe()
