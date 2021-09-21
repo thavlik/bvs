@@ -78,7 +78,7 @@ spec:
       #  - --node-database-path
       #  - "/mnt/db"
       #  - --node-socket-path
-      #  - "/node.socket"
+      #  - "/shared/node.socket"
       #  - --node-host-addr
       #  - "0.0.0.0"
       #  - --node-port

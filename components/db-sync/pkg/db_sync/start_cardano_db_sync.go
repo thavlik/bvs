@@ -3,7 +3,10 @@ package db_sync
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 func StartCardanoDBSync() error {
@@ -20,6 +23,9 @@ func StartCardanoDBSync() error {
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
 		return err
 	}
 	stdoutDone := make(chan error, 1)
@@ -44,10 +50,30 @@ func StartCardanoDBSync() error {
 			return scanner.Err()
 		}()
 	}()
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Wait(); err != nil {
+		printErrorLog()
 		return fmt.Errorf("cardano-db-sync: %v", err)
 	}
 	<-stdoutDone
 	<-stderrDone
 	return nil
+}
+
+func printErrorLog() {
+	fmt.Println("cardano-db-sync exited unexpectedly. Retrieving error log...")
+	files, err := ioutil.ReadDir("/tmp")
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".log") {
+			path := filepath.Join("/tmp", file.Name())
+			body, err := ioutil.ReadFile(path)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("Found error log at %s:\n", path)
+			fmt.Println(string(body))
+		}
+	}
 }

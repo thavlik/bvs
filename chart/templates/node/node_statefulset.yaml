@@ -15,6 +15,10 @@ spec:
         app: {{ .Release.Name }}-node
     spec:
       volumes:
+      - name: shared-postgres
+        emptyDir: {}
+      - name: shared-node
+        emptyDir: {}
     {{- if .Values.postgres.pvc }}
       - name: postgresdata
         persistentVolumeClaim:
@@ -37,7 +41,12 @@ spec:
         command:
         - sh
         - -c
-        - db-sync && cd /tmp && cat $(ls | grep .log)
+        - db-sync || cat $(find /tmp -iname '*.log')
+        volumeMounts:
+        - name: shared-postgres
+          mountPath: /var/run/postgresql
+        - name: shared-node
+          mountPath: /shared
         env:
         - name: POSTGRES_HOST
           value: {{ .Release.Name }}-node
@@ -69,16 +78,20 @@ spec:
           value: password
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
-    {{- if .Values.postgres.pvc }}
         volumeMounts:
+        - name: shared-postgres
+          mountPath: /var/run/postgresql
+    {{- if .Values.postgres.pvc }}
         - name: postgresdata
           mountPath: /var/lib/postgresql/data
     {{- end }}
       - name: node
         imagePullPolicy: {{ .Values.node.imagePullPolicy }}
         image: {{ .Values.node.image }}
-    {{- if .Values.node.pvc }}
         volumeMounts:
+        - name: shared-node
+          mountPath: /shared
+    {{- if .Values.node.pvc }}
         - name: nodedata
           mountPath: /mnt
     {{- end }}
@@ -98,7 +111,7 @@ spec:
         - --node-database-path
         - "/mnt/db"
         - --node-socket-path
-        - "/node.socket"
+        - "/shared/node.socket"
         - --node-host-addr
         - "0.0.0.0"
         - --node-port

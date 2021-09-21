@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-var socketPath = "/tmp/node.socket"
+var socketPath = "/shared/node.socket"
 
 func StartSocat(nodeAddr string) error {
 	fmt.Printf("Starting proxy from unix://%s to tcp://%s\n", socketPath, nodeAddr)

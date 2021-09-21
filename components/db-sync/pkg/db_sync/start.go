@@ -11,12 +11,12 @@ func Start(nodeAddr string, cl client.Client) error {
 	if err := WaitForNode(cl); err != nil {
 		return fmt.Errorf("WaitForNode: %v", err)
 	}
-	socatDone := make(chan error, 1)
-	go func() {
-		fmt.Println("Starting socat")
-		socatDone <- StartSocat(nodeAddr)
-		close(socatDone)
-	}()
+	//socatDone := make(chan error, 1)
+	//go func() {
+	//	fmt.Println("Starting socat")
+	//	socatDone <- StartSocat(nodeAddr)
+	//	close(socatDone)
+	//}()
 	dbSyncDone := make(chan error, 1)
 	go func() {
 		time.Sleep(3 * time.Second)
@@ -27,7 +27,7 @@ func Start(nodeAddr string, cl client.Client) error {
 	select {
 	case err := <-dbSyncDone:
 		return fmt.Errorf("cardano-db-sync: %v", err)
-	case err := <-socatDone:
-		return fmt.Errorf("socat: %v", err)
+		//case err := <-socatDone:
+		//	return fmt.Errorf("socat: %v", err)
 	}
 }

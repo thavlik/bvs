@@ -48,7 +48,7 @@ COPY --from=builder /go/src/github.com/thavlik/bvs/components/node/cmd/node/node
 COPY components/node/configs /configs
 ENV CARDANO_CONFIG_PATH="/configs"
 ENV CARDANO_DB_PATH="/mnt/db"
-ENV CARDANO_NODE_SOCKET_PATH="/node.socket"
+ENV CARDANO_NODE_SOCKET_PATH="/shared/node.socket"
 ENV TESTNET_MAGIC="1097911063"
 
 CMD ["node", "server"]

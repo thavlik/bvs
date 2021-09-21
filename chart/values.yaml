@@ -25,7 +25,7 @@ node:
   resources:
     limits:
       memory: 9Gi
-      cpu: 3000m
+      cpu: 2000m
   metrics: true
   pvc: ""
 
@@ -45,8 +45,8 @@ dbSync:
   replicas: 1
   resources:
     limits:
-      memory: 64Mi
-      cpu: 50m
+      memory: 1024Mi
+      cpu: 1000m
   metrics: true
 
 explorer:
@@ -65,8 +65,8 @@ postgres:
   replicas: 1
   resources:
     limits:
-      memory: 64Mi
-      cpu: 50m
+      memory: 1024Mi
+      cpu: 1000m
   metrics: true
   pvc: ""
 

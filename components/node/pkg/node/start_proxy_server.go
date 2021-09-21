@@ -11,7 +11,7 @@ func (s *Server) startProxyServer(port int) error {
 		"bash",
 		"-c",
 		fmt.Sprintf(
-			"socat -d TCP-LISTEN:%d,reuseaddr,fork UNIX-CLIENT:/node.socket",
+			"socat -d TCP-LISTEN:%d,reuseaddr,fork UNIX-CLIENT:/shared/node.socket",
 			port,
 		),
 	)
