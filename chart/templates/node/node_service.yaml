@@ -14,4 +14,4 @@ spec:
   - name: node
     port: 1337
   - name: postgres
-    port: 4550
+    port: 5432

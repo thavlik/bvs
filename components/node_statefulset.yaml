@@ -14,6 +14,7 @@ spec:
       labels:
         app: {{ .Release.Name }}-node
     spec:
+    {{- if or .Values.postgres.pvc .Values.node.pvc }}
       volumes:
     {{- if .Values.postgres.pvc }}
       - name: postgresdata
@@ -25,32 +26,31 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.node.pvc }}
     {{- end }}
+    {{- end }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 10 }}
     {{- end }}
       containers:
-      - name: postgres
-        imagePullPolicy: {{ .Values.postgres.imagePullPolicy }}
-        image: {{ .Values.postgres.image }}
-        command:
-        - docker-entrypoint.sh
-        - postgres
-        resources:
-{{ toYaml .Values.postgres.resources | indent 12 }}
-        ports:
-        - containerPort: 5432
-          name: postgres
-        env:
-        - name: POSTGRES_PASSWORD
-          value: password
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
-    {{- if .Values.postgres.pvc }}
-        volumeMounts:
-        - name: postgresdata
-          mountPath: /var/lib/postgresql/data
-    {{- end }}
+#      - name: postgres
+#        imagePullPolicy: {{ .Values.postgres.imagePullPolicy }}
+#        image: {{ .Values.postgres.image }}
+#        command:
+#        - postgres
+#        - -D
+#        - /mnt/db
+#        - -p
+#        - "4550"
+#        resources:
+#{{ toYaml .Values.postgres.resources | indent 12 }}
+#        ports:
+#        - containerPort: 4550
+#          name: postgres
+#    {{- if .Values.postgres.pvc }}
+#        volumeMounts:
+#        - name: postgresdata
+#          mountPath: /mnt
+#    {{- end }}
       - name: node
         imagePullPolicy: {{ .Values.node.imagePullPolicy }}
         image: {{ .Values.node.image }}
@@ -68,24 +68,27 @@ spec:
           periodSeconds: 10
           failureThreshold: 25
         command:
-        - node
-        - server
-        - --node-config
-        - "/configs/testnet-config.json"
-        - --node-database-path
-        - "/mnt/db"
-        - --node-socket-path
-        - "/node.socket"
-        - --node-host-addr
-        - "0.0.0.0"
-        - --node-port
-        - "1337"
-        - --node-topology
-        - "/configs/testnet-topology.json"
-      {{- if .Values.node.metrics }}
-        - --metrics-port
-        - "9091"
-      {{- end }}
+         - tail
+         - -f
+         - /dev/null
+      #  - node
+      #  - server
+      #  - --node-config
+      #  - "/configs/testnet-config.json"
+      #  - --node-database-path
+      #  - "/mnt/db"
+      #  - --node-socket-path
+      #  - "/node.socket"
+      #  - --node-host-addr
+      #  - "0.0.0.0"
+      #  - --node-port
+      #  - "1337"
+      #  - --node-topology
+      #  - "/configs/testnet-topology.json"
+      #{{- if .Values.node.metrics }}
+      #  - --metrics-port
+      #  - "9091"
+      #{{- end }}
         resources:
 {{ toYaml .Values.node.resources | indent 12 }}
         ports:

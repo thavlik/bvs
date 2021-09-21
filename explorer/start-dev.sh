@@ -7,7 +7,6 @@ NAME=explorer
 docker kill $NAME >/dev/null 2>&1 || true
 docker run --rm -d \
     --name $NAME \
-    -it \
     -v $(pwd):/mnt \
     --entrypoint /bin/sh \
     -p $PORT:$PORT \

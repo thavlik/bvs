@@ -35,7 +35,10 @@ func (s *Server) Start(
 	databaseLoaded := make(chan int, 1)
 	startProxy := make(chan int, 1)
 	nodeDone := make(chan error, 1)
-	//dbSyncDone := make(chan error, 1)
+	dbSyncDone := make(chan error, 1)
+	if dbSyncPath == "" {
+		defer close(dbSyncDone)
+	}
 	go func() {
 		nodeDone <- s.startNode(
 			nodePort,
@@ -60,14 +63,6 @@ func (s *Server) Start(
 			close(metricsDone)
 		}()
 	}
-	//if dbSyncPath == "" {
-	//	defer close(dbSyncDone)
-	//} else {
-	//	go func() {
-	//		dbSyncDone <- s.startDBSyncStack(dbSyncPath, postgresPort)
-	//		close(dbSyncDone)
-	//	}()
-	//}
 	fmt.Println("Waiting for cardano-node to fully synchronize...")
 	fullySynced := make(chan error, 1)
 	go func() {
@@ -83,6 +78,12 @@ func (s *Server) Start(
 	stop := make(chan int, 1)
 	go func() {
 		<-fullySynced
+		if dbSyncPath != "" {
+			go func() {
+				dbSyncDone <- s.startDBSync()
+				close(dbSyncDone)
+			}()
+		}
 		for {
 			timer := time.After(60 * time.Second)
 			select {

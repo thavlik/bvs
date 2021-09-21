@@ -3,7 +3,7 @@ dependencies:
   - components/node
   - components/gateway
   - components/db-sync
-  - explorer
+  #- explorer
 env:
   kubernetes:
     resources:

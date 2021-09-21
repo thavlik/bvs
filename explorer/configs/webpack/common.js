@@ -29,7 +29,7 @@ module.exports = {
           //"url-loader",
           "file-loader?hash=sha512&digest=hex&name=img/[contenthash].[ext]",
           //"image-webpack-loader",
-          "image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7&gifsicle.interlaced=false",
+          "image-webpack-loader?bypassOnDebug&optipng.optimizationLevel=7",
         ],
       },
     ],

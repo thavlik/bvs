@@ -35,25 +35,29 @@ func (s *Server) startNode(
 		return err
 	}
 	stdoutDone := make(chan error, 1)
-	isReady := false
+	if err := cmd.Start(); err != nil {
+		return err
+	}
 	go func() {
 		defer close(stdoutDone)
 		stdoutDone <- func() error {
 			scanner := bufio.NewScanner(stdout)
-			for {
-				for scanner.Scan() {
-					text := scanner.Text()
-					if !isReady {
-						if strings.Contains(text, "Chain extended, new tip:") {
-							isReady = true
-							databaseLoaded <- 0
-							close(databaseLoaded)
-						}
+			isReady := false
+			for scanner.Scan() {
+				text := scanner.Text()
+				if !isReady {
+					if strings.Contains(text, "Chain extended, new tip:") {
+						isReady = true
+						databaseLoaded <- 0
+						close(databaseLoaded)
 					}
-					fmt.Println(text)
 				}
-				fmt.Printf("WARNING: stdout error: %v\n", scanner.Err())
+				fmt.Println(text)
 			}
+			if err := scanner.Err(); err != nil {
+				return err
+			}
+			return nil
 		}()
 	}()
 	stderrDone := make(chan error, 1)
@@ -61,28 +65,29 @@ func (s *Server) startNode(
 		defer close(stderrDone)
 		stderrDone <- func() error {
 			scanner := bufio.NewScanner(stderr)
-			for {
-				for scanner.Scan() {
-					fmt.Println(scanner.Text())
-				}
-				fmt.Printf("WARNING: stderr error: %v\n", scanner.Err())
+			for scanner.Scan() {
+				fmt.Println(scanner.Text())
 			}
+			if err := scanner.Err(); err != nil {
+				return err
+			}
+			return nil
 		}()
 	}()
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	exit := make(chan error, 1)
-	go func() {
-		exit <- cmd.Wait()
-		close(exit)
-	}()
-	select {
-	case err := <-stdoutDone:
-		return fmt.Errorf("stdout: %v", err)
-	case err := <-stderrDone:
-		return fmt.Errorf("stderr: %v", err)
-	case err := <-exit:
-		return fmt.Errorf("exited prematurely: %v", err)
-	}
+	//exit := make(chan error, 1)
+	//go func() {
+	//	exit <- cmd.Wait()
+	//	close(exit)
+	//}()
+	//select {
+	//case err := <-stdoutDone:
+	//	return fmt.Errorf("stdout: %v", err)
+	//case err := <-stderrDone:
+	//	return fmt.Errorf("stderr: %v", err)
+	//case err := <-exit:
+	err = cmd.Wait()
+	<-stdoutDone
+	<-stderrDone
+	return fmt.Errorf("exited prematurely: %v", err)
+	//}
 }

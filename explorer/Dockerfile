@@ -1,4 +1,5 @@
 FROM node:16.9.1-alpine AS builder
+RUN apk add --no-cache automake autoconf build-base
 WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
