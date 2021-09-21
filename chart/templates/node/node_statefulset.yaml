@@ -19,6 +19,11 @@ spec:
         emptyDir: {}
       - name: shared-node
         emptyDir: {}
+    {{- if .Values.dbSync.pvc }}
+      - name: dbsyncdata
+        persistentVolumeClaim:
+          claimName: {{ .Values.dbSync.pvc }}
+    {{- end }}
     {{- if .Values.postgres.pvc }}
       - name: postgresdata
         persistentVolumeClaim:
@@ -47,6 +52,10 @@ spec:
           mountPath: /var/run/postgresql
         - name: shared-node
           mountPath: /shared
+      {{- if .Values.dbSync.pvc }}
+        - name: dbsyncdata
+          mountPath: /etc/db-sync/state
+      {{- end }}
         env:
         - name: POSTGRES_HOST
           value: {{ .Release.Name }}-node

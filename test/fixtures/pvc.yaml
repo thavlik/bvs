@@ -23,3 +23,17 @@ spec:
   resources:
     requests:
       storage: 100G
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cardano-db-sync
+  namespace: bvs
+spec:
+  storageClassName: do-block-storage
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10G
+      

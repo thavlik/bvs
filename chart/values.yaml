@@ -48,6 +48,7 @@ dbSync:
       memory: 1024Mi
       cpu: 1000m
   metrics: true
+  pvc: ""
 
 explorer:
   image: thavlik/bvs-explorer:latest

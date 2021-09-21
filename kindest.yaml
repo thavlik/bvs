@@ -21,6 +21,8 @@ env:
             pvc: cardano-db
           postgres:
             pvc: postgres-db
+          dbSync:
+            pvc: cardano-db-sync
           commissioner:
             mongoDB:
               host: bvs-db-b7d57032.mongo.ondigitalocean.com
