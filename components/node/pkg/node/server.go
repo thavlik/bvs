@@ -33,7 +33,6 @@ func (s *Server) Start(
 	dbSyncPath string,
 	postgresPort int,
 ) error {
-	start := time.Now()
 	apiServerDone := make(chan error, 1)
 	databaseLoaded := make(chan int, 1)
 	startProxy := make(chan int, 1)
