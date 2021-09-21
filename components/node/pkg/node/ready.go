@@ -14,8 +14,9 @@ func waitForReady(databaseLoaded <-chan int) error {
 	start := time.Now()
 	stop := make(chan int, 1)
 	var l sync.Mutex
-	progress := "?"
 	message := "Waiting for cardano-node to load the blockchain data from local disk. This usually takes 3-4 minutes."
+	var epoch, slot, block int
+	progress := "?"
 	go func() {
 		for {
 			timer := time.After(10 * time.Second)
@@ -25,12 +26,14 @@ func waitForReady(databaseLoaded <-chan int) error {
 			case <-timer:
 				l.Lock()
 				m := message
+				e := epoch
+				s := slot
+				b := block
 				p := progress
 				l.Unlock()
 				fmt.Printf(
-					"%s (%s%% complete, %s elapsed)\n",
-					m,
-					p,
+					"%s (epoch %d, slot %d, block %d, %s%% complete, %s elapsed)\n",
+					m, e, s, b, p,
 					time.Since(start).Round(time.Second).String())
 			}
 		}
@@ -50,6 +53,9 @@ func waitForReady(databaseLoaded <-chan int) error {
 		} else {
 			l.Lock()
 			progress = tip.SyncProgress
+			epoch = tip.Epoch
+			slot = tip.Slot
+			block = tip.Block
 			l.Unlock()
 			if strings.HasPrefix(tip.SyncProgress, "100") {
 				if err := signalReady(); err != nil {
