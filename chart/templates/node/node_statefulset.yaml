@@ -15,19 +15,21 @@ spec:
         app: {{ .Release.Name }}-node
     spec:
       volumes:
+    {{- if .Values.postgres.enabled }}
       - name: shared-postgres
         emptyDir: {}
-      - name: shared-node
-        emptyDir: {}
-    {{- if .Values.dbSync.pvc }}
-      - name: dbsyncdata
-        persistentVolumeClaim:
-          claimName: {{ .Values.dbSync.pvc }}
-    {{- end }}
-    {{- if .Values.postgres.pvc }}
+      {{- if .Values.postgres.pvc }}
       - name: postgresdata
         persistentVolumeClaim:
           claimName: {{ .Values.postgres.pvc }}
+      {{- end }}
+    {{- end }}
+      - name: shared-node
+        emptyDir: {}
+    {{- if and .Values.dbSync.enabled .Values.dbSync.pvc }}
+      - name: dbsyncdata
+        persistentVolumeClaim:
+          claimName: {{ .Values.dbSync.pvc }}
     {{- end }}
     {{- if .Values.node.pvc }}
       - name: nodedata
@@ -40,11 +42,31 @@ spec:
     {{- end }}
       serviceAccountName: {{ .Release.Name }}-node
       containers:
+    {{- if .Values.node.socat.enabled }}
+      - name: socat
+        imagePullPolicy: {{ .Values.node.socat.imagePullPolicy }} IfNotPresent
+        image: {{ .Values.node.socat.image }} alpine/socat:latest
+        command:
+        - sh
+        - -c
+        - socat -d TCP-LISTEN:{{ .Values.node.socat.port }},reuseaddr,fork UNIX-CLIENT:/shared/node.socket
+        volumeMounts:
+        - name: shared-node
+          mountPath: /shared
+        ports:
+        - containerPort: 2100
+          name: proxy
+        resources:
+{{ toYaml .Values.node.socat.resources | indent 12 }}
+    {{- end }}
+    {{- if .Values.dbSync.enabled }}
       - name: dbsync
         imagePullPolicy: {{ .Values.dbSync.imagePullPolicy }}
         image: {{ .Values.dbSync.image }}
         command:
-        - db-sync
+        - tail #- db-sync
+        - -f
+        - /dev/null
         volumeMounts:
         - name: shared-postgres
           mountPath: /var/run/postgresql
@@ -69,6 +91,8 @@ spec:
               fieldPath: metadata.namespace
         resources:
 {{ toYaml .Values.dbSync.resources | indent 12 }}
+    {{- end }}
+    {{- if .Values.postgres.enabled }}
       - name: postgres
         imagePullPolicy: {{ .Values.postgres.imagePullPolicy }}
         image: {{ .Values.postgres.image }}
@@ -86,11 +110,12 @@ spec:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         volumeMounts:
-        - name: shared-postgres
-          mountPath: /var/run/postgresql
-    {{- if .Values.postgres.pvc }}
+      {{- if .Values.postgres.pvc }}
         - name: postgresdata
           mountPath: /var/lib/postgresql/data
+      {{- end }}
+        - name: shared-postgres
+          mountPath: /var/run/postgresql
     {{- end }}
       - name: node
         imagePullPolicy: {{ .Values.node.imagePullPolicy }}
@@ -132,12 +157,8 @@ spec:
         resources:
 {{ toYaml .Values.node.resources | indent 12 }}
         ports:
-        - containerPort: 80
-          name: http
         - containerPort: 1337
           name: node
-        - containerPort: 2100
-          name: proxy
       {{- if .Values.node.metrics }}
         - containerPort: 9091
           name: metrics
